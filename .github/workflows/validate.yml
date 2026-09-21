@@ -58,6 +58,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
       - name: Build bootable LeanPi image
         run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh orangepi-pc
+      - name: Verify QEMU Orange Pi machine exists
+        run: qemu-system-arm -machine help | grep -F orangepi-pc
+      - name: Inspect built image
+        run: |
+          ls -lh out/orangepi-pc/leanpi-orangepi-pc.img
+          sudo sfdisk --dump out/orangepi-pc/leanpi-orangepi-pc.img
+          sudo file out/orangepi-pc/leanpi-orangepi-pc.img
       - name: Boot and qualify in QEMU
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
