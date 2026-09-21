@@ -42,8 +42,18 @@ if grep -Eiq 'kernel panic|not syncing|emergency mode|failed to mount.*root|depe
   exit 1
 fi
 if grep -Fq 'LEANPI_BOOT_COMPLETE' "$log"; then
-  echo "QEMU smoke test: PASS"
-  exit 0
+  required_boot_signatures=('Starting kernel' 'Linux version' 'systemd')
+  missing_boot_signatures=()
+  for pattern in "${required_boot_signatures[@]}"; do
+    grep -Fq "$pattern" "$log" || missing_boot_signatures+=("$pattern")
+  done
+  if (("${#missing_boot_signatures[@]}" == 0)); then
+    echo "QEMU smoke test: PASS"
+    exit 0
+  fi
+  echo "QEMU smoke test: FAIL (boot marker seen without complete boot evidence)" >&2
+  printf 'Missing boot signature: %s\n' "${missing_boot_signatures[@]}" >&2
+  exit 1
 fi
 
 echo '--- QEMU boot diagnostics ---' >&2
