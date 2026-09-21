@@ -28,7 +28,12 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-timeout --signal=TERM --kill-after=5 "${boot_timeout}s"   "$qemu" -M "$QEMU_MACHINE" -nographic -no-reboot   -nic user   -drive "file=$image,format=raw,if=sd" 2>&1 | tee "$log"
+qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot -nic user)
+case "$QEMU_MACHINE" in
+  orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
+  *) echo "No QEMU storage mapping defined for $QEMU_MACHINE" >&2; exit 1 ;;
+esac
+timeout --signal=TERM --kill-after=5 "${boot_timeout}s" "$qemu" "${qemu_args[@]}" 2>&1 | tee "$log"
 rc=${PIPESTATUS[0]}
 set -e
 
