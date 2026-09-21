@@ -66,9 +66,13 @@ jobs:
           sudo sfdisk --dump out/orangepi-pc/leanpi-orangepi-pc.img
           sudo file out/orangepi-pc/leanpi-orangepi-pc.img
       - name: Boot and qualify in QEMU
+        id: qemu_boot
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
           bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 120
+      - name: Record qualification PASS
+        if: success()
+        run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
       - name: Write qualification metadata
         if: always()
         shell: bash
@@ -92,5 +96,6 @@ jobs:
           path: |
             out/orangepi-pc/qemu-serial.log
             out/orangepi-pc/qualification.txt
+            out/orangepi-pc/PASS
             out/orangepi-pc/*.sha256
           if-no-files-found: ignore
