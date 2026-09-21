@@ -17,6 +17,7 @@ jobs:
           bash -n scripts/install-virt-boot.sh
           bash -n scripts/install-raspi-boot.sh
           bash -n scripts/build-armv6-kernel.sh
+          bash -n scripts/extract-resource-baseline.sh
           bash -n scripts/qemu-smoke.sh
 
   board-preflight:
@@ -73,6 +74,9 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
           bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 420
+      - name: Extract resource baseline
+        if: success()
+        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
@@ -128,6 +132,9 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" "out/${{ matrix.board }}"
           bash scripts/qemu-smoke.sh "${{ matrix.board }}" "out/${{ matrix.board }}/leanpi-${{ matrix.board }}.img" 180
+      - name: Extract resource baseline
+        if: success()
+        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_VIRT_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
@@ -154,6 +161,7 @@ jobs:
           path: |
             out/${{ matrix.board }}/qemu-serial.log
             out/${{ matrix.board }}/qualification.txt
+            out/${{ matrix.board }}/resource-baseline.txt
             out/${{ matrix.board }}/PASS
             out/${{ matrix.board }}/*.sha256
           if-no-files-found: ignore
@@ -186,6 +194,9 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" "out/${{ matrix.board }}"
           bash scripts/qemu-smoke.sh "${{ matrix.board }}" "out/${{ matrix.board }}/leanpi-${{ matrix.board }}.img" 240
+      - name: Extract resource baseline
+        if: success()
+        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
@@ -212,6 +223,7 @@ jobs:
           path: |
             out/${{ matrix.board }}/qemu-serial.log
             out/${{ matrix.board }}/qualification.txt
+            out/${{ matrix.board }}/resource-baseline.txt
             out/${{ matrix.board }}/PASS
             out/${{ matrix.board }}/*.sha256
           if-no-files-found: ignore
@@ -233,6 +245,9 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" out/raspi2b
           bash scripts/qemu-smoke.sh raspi2b out/raspi2b/leanpi-raspi2b.img 240
+      - name: Extract resource baseline
+        if: success()
+        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi2b-armhf" | tee out/raspi2b/PASS
@@ -318,6 +333,9 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" out/raspi0
           bash scripts/qemu-smoke.sh raspi0 out/raspi0/leanpi-raspi0.img 300
+      - name: Extract resource baseline
+        if: success()
+        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi0-armv6" | tee out/raspi0/PASS
