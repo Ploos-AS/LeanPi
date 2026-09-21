@@ -31,7 +31,7 @@ After=systemd-remount-fs.service
 Before=sysinit.target
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete'
+ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete; if [ -x /usr/local/sbin/leanpi-resource-baseline ]; then /usr/local/sbin/leanpi-resource-baseline /run/leanpi-resource-baseline.txt > /dev/console 2>&1 || true; fi'
 EOF
 mkdir -p "$rootfs_dir/etc/systemd/system/sysinit.target.wants"
 ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/sysinit.target.wants/leanpi-boot-complete.service"
@@ -56,6 +56,8 @@ fi
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
 # Install board-family boot payload before copying the completed rootfs.
 if [[ $KERNEL_FAMILY == sunxi ]]; then bash scripts/install-sunxi-boot.sh "$BOARD_ID" "$rootfs_dir" "$image_path"; fi
+install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
+
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
 if [[ $KERNEL_FAMILY == raspberrypi ]]; then bash scripts/install-raspi-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
 loopdev=; mnt=; cleanup(){ set +e; [[ -n $mnt ]] && mountpoint -q "$mnt" && umount "$mnt"; [[ -n $mnt && -d $mnt ]] && rmdir "$mnt"; [[ -n $loopdev ]] && losetup -d "$loopdev"; }; trap cleanup EXIT
