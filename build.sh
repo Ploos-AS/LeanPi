@@ -74,6 +74,18 @@ Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
 EOF
 ln -sf /usr/lib/systemd/system/tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
 
+# Keep /var/tmp persistent: applications may rely on data surviving reboot.
+# Bound APT's package cache instead of spending scarce RAM on another tmpfs.
+mkdir -p "$rootfs_dir/etc/apt/apt.conf.d"
+cat > "$rootfs_dir/etc/apt/apt.conf.d/90leanpi-cache" <<'EOF'
+APT::Keep-Downloaded-Packages "false";
+Binary::apt::APT::Keep-Downloaded-Packages "false";
+Acquire::Languages "none";
+EOF
+
+# Periodic package-list cleanup is intentionally not implemented as a daemon/timer.
+# Explicit package operations remain predictable and background wakeups stay at zero.
+
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
