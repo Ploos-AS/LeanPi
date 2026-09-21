@@ -16,6 +16,17 @@ echo "Installing Debian sunxi kernel and U-Boot packages"
 chroot "$rootfs" apt-get update
 DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends   linux-image-armmp u-boot-sunxi
 
+# The generic Debian armmp initramfs does not always pull the sunxi MMC host
+# drivers into a minimal rootfs.  They must be available before the real root
+# filesystem can be discovered on QEMU/physical H3 SD media.
+mkdir -p "$rootfs/etc/initramfs-tools"
+cat > "$rootfs/etc/initramfs-tools/modules" <<'EOF'
+# LeanPi sunxi root-on-SD boot prerequisites
+sunxi_mmc
+mmc_block
+EOF
+chroot "$rootfs" update-initramfs -u -k all
+
 kernel=$(basename "$(find "$rootfs/boot" -maxdepth 1 -name 'vmlinuz-*' -type f | sort -V | tail -1)")
 initrd=$(basename "$(find "$rootfs/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)")
 [[ -n "$kernel" && -n "$initrd" ]] || { echo "Kernel/initrd not found" >&2; exit 1; }
