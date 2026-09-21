@@ -56,6 +56,16 @@ fi
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
 # Install board-family boot payload before copying the completed rootfs.
 if [[ $KERNEL_FAMILY == sunxi ]]; then bash scripts/install-sunxi-boot.sh "$BOARD_ID" "$rootfs_dir" "$image_path"; fi
+install -Dm755 scripts/leanpi-config "$rootfs_dir/usr/local/sbin/leanpi-config"
+mkdir -p "$rootfs_dir/etc/systemd/journald.conf.d"
+cat > "$rootfs_dir/etc/systemd/journald.conf.d/leanpi.conf" <<'EOF'
+[Journal]
+Storage=volatile
+RuntimeMaxUse=8M
+RuntimeKeepFree=16M
+Compress=yes
+EOF
+
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
