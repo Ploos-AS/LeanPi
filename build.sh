@@ -66,6 +66,14 @@ RuntimeKeepFree=16M
 Compress=yes
 EOF
 
+# Keep temporary writes off flash without allowing tmpfs to consume unbounded RAM.
+mkdir -p "$rootfs_dir/etc/systemd/system/tmp.mount.d"
+cat > "$rootfs_dir/etc/systemd/system/tmp.mount.d/leanpi.conf" <<'EOF'
+[Mount]
+Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
+EOF
+ln -sf /usr/lib/systemd/system/tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
+
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
