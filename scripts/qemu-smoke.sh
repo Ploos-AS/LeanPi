@@ -46,6 +46,17 @@ if grep -Fq 'LEANPI_BOOT_COMPLETE' "$log"; then
   exit 0
 fi
 
+echo '--- QEMU boot diagnostics ---' >&2
+for pattern in 'U-Boot' 'Starting kernel' 'Linux version' 'Waiting for root' 'leanpi-root' 'systemd'; do
+  if grep -Fq "$pattern" "$log"; then
+    echo "reached: $pattern" >&2
+  else
+    echo "missing: $pattern" >&2
+  fi
+done
+echo '--- serial log tail ---' >&2
+tail -n 80 "$log" >&2 || true
+
 if [[ $rc -eq 124 || $rc -eq 137 || $rc -eq 143 ]]; then
   echo "QEMU smoke test: INCOMPLETE (timeout before LEANPI_BOOT_COMPLETE)" >&2
 else
