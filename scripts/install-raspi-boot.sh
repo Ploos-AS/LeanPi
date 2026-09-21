@@ -7,10 +7,16 @@ source "boards/${board_id}.conf"
 [[ "${KERNEL_FAMILY:-}" == raspberrypi ]] || { echo "Not a Raspberry Pi target: $board_id" >&2; exit 1; }
 [[ $EUID -eq 0 ]] || { echo "Must run as root" >&2; exit 1; }
 case "$DEBIAN_ARCH" in
+  armel) kernel_package=linux-image-marvell ;;
   armhf) kernel_package=linux-image-armmp ;;
   arm64) kernel_package=linux-image-arm64 ;;
   *) echo "Unsupported Raspberry Pi architecture: $DEBIAN_ARCH" >&2; exit 1 ;;
 esac
+if [[ "$DEBIAN_ARCH" == armel ]]; then
+  echo "ARMv6 note: Debian armel userspace is supported, but Debian Trixie does not provide a BCM2835/Pi Zero kernel package." >&2
+  echo "A dedicated ARMv6 kernel artifact is required before raspi0 can receive end-to-end PASS." >&2
+  exit 3
+fi
 echo "Installing Debian Raspberry Pi qualification kernel: $kernel_package"
 chroot "$rootfs" apt-get update
 DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends "$kernel_package"
