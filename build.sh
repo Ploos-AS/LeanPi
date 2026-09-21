@@ -25,7 +25,9 @@ printf 'leanpi\n' > "$rootfs_dir/etc/hostname"; printf 'auto lo\niface lo inet l
 cat > "$rootfs_dir/etc/systemd/system/leanpi-boot-complete.service" <<'EOF'
 [Unit]
 Description=LeanPi qualification boot marker
-After=multi-user.target
+DefaultDependencies=no
+After=local-fs.target
+Before=multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console'
