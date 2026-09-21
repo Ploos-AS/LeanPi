@@ -30,7 +30,7 @@ After=local-fs.target
 Before=multi-user.target
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console'
+ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete'
 [Install]
 WantedBy=multi-user.target
 EOF
