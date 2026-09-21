@@ -29,7 +29,7 @@ label leanpi
   linux /boot/$kernel
   initrd /boot/$initrd
   fdt /usr/lib/linux-image-${kernel#vmlinuz-}/$DTB
-  append root=LABEL=leanpi-root rootwait rw console=${SERIAL_CONSOLE:-ttyS0},115200 console=tty1
+  append root=LABEL=leanpi-root rootwait rw rootfstype=ext4 rootdelay=2 console=${SERIAL_CONSOLE:-ttyS0},115200 console=tty1
 EOF
 
 # Debian's u-boot-sunxi package ships board-specific SPL+U-Boot images here.
