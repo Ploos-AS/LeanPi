@@ -69,10 +69,28 @@ jobs:
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
           bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 120
-      - name: Upload serial log
+      - name: Write qualification metadata
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p out/orangepi-pc
+          {
+            echo "board=orangepi-pc"
+            echo "architecture=armhf"
+            echo "qemu_machine=orangepi-pc"
+            echo "commit=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "run_attempt=$GITHUB_RUN_ATTEMPT"
+            qemu-system-arm --version | head -n 1 | sed 's/^/qemu_version=/'
+            sha256sum out/orangepi-pc/leanpi-orangepi-pc.img 2>/dev/null | sed 's/^/image_sha256=/' || true
+          } > out/orangepi-pc/qualification.txt
+      - name: Upload qualification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: orangepi-pc-qemu-serial
-          path: out/orangepi-pc/qemu-serial.log
+          name: orangepi-pc-qemu-qualification
+          path: |
+            out/orangepi-pc/qemu-serial.log
+            out/orangepi-pc/qualification.txt
+            out/orangepi-pc/*.sha256
           if-no-files-found: ignore
