@@ -31,19 +31,21 @@ set +e
 qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot -nic user)
 case "$QEMU_MACHINE" in
   orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
-  raspi2b|raspi3b)
+  raspi0|raspi2b|raspi3b)
     rootfs_dir="out/${board_id}/rootfs"
-    kernel=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'vmlinuz-*' -type f | sort -V | tail -1)
+    kernel=$(find "$rootfs_dir/boot" -maxdepth 1 \( -name 'vmlinuz-*' -o -name 'kernel.img' \) -type f | sort -V | tail -1)
     initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
+    [[ "$board_id" == raspi0 ]] && initrd=""
     dtb=$(find "$rootfs_dir/usr/lib" -type f -name "${DTB}" | head -1)
-    [[ -n "$kernel" && -n "$initrd" && -n "$dtb" ]] || { echo "Missing Raspberry Pi kernel/initrd/DTB" >&2; exit 1; }
+    [[ -n "$kernel" && -n "$dtb" ]] || { echo "Missing Raspberry Pi kernel/DTB" >&2; exit 1; }
+    [[ "$board_id" == raspi0 || -n "$initrd" ]] || { echo "Missing Raspberry Pi initrd" >&2; exit 1; }
     qemu_args+=(
       -kernel "$kernel"
-      -initrd "$initrd"
       -dtb "$dtb"
       -append "root=/dev/mmcblk0p1 rootwait rw console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       -drive "file=$image,format=raw,if=sd"
     )
+    [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
     ;;
   virt)
     rootfs_dir="out/${board_id}/rootfs"
