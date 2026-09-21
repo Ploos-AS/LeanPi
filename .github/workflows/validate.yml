@@ -262,3 +262,35 @@ jobs:
             out/raspi2b/PASS
             out/raspi2b/*.sha256
           if-no-files-found: ignore
+
+
+  kernel-armv6:
+    name: Build Raspberry Pi Zero ARMv6 kernel
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM cross toolchain
+        run: sudo apt-get update && sudo apt-get install -y git make gcc-arm-linux-gnueabihf bc bison flex libssl-dev libelf-dev
+      - name: Cache ARMv6 kernel build
+        uses: actions/cache@v4
+        with:
+          path: out/kernel-armv6
+          key: leanpi-armv6-kernel-${{ runner.os }}-${{ hashFiles('scripts/build-armv6-kernel.sh') }}
+      - name: Build ARMv6 kernel
+        run: |
+          if [[ ! -f out/kernel-armv6/boot/kernel.img ]]; then
+            bash scripts/build-armv6-kernel.sh out/kernel-armv6
+          fi
+      - name: Verify ARMv6 kernel artifacts
+        run: |
+          test -s out/kernel-armv6/boot/kernel.img
+          test -s out/kernel-armv6/boot/bcm2835-rpi-zero.dtb
+          test -s out/kernel-armv6/BUILDINFO
+          cat out/kernel-armv6/BUILDINFO
+      - name: Upload ARMv6 kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: leanpi-armv6-kernel
+          path: out/kernel-armv6
+          if-no-files-found: error
