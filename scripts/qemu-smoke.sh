@@ -16,6 +16,7 @@ source "$board_file"
 [[ -n "${QEMU_MACHINE:-}" ]] || { echo "Missing QEMU_MACHINE" >&2; exit 1; }
 
 case "$ARCH" in
+  armel) qemu=qemu-system-arm ;;
   armhf) qemu=qemu-system-arm ;;
   arm64) qemu=qemu-system-aarch64 ;;
   *) echo "Unsupported QEMU architecture: $ARCH" >&2; exit 1 ;;
@@ -36,7 +37,11 @@ case "$QEMU_MACHINE" in
     kernel=$(find "$rootfs_dir/boot" -maxdepth 1 \( -name 'vmlinuz-*' -o -name 'kernel.img' \) -type f | sort -V | tail -1)
     initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
     [[ "$board_id" == raspi0 ]] && initrd=""
-    dtb=$(find "$rootfs_dir/usr/lib" -type f -name "${DTB}" | head -1)
+    if [[ "$board_id" == raspi0 ]]; then
+      dtb=$(find "$rootfs_dir/boot" -maxdepth 1 -type f -name "${DTB}" | head -1)
+    else
+      dtb=$(find "$rootfs_dir/usr/lib" -type f -name "${DTB}" | head -1)
+    fi
     [[ -n "$kernel" && -n "$dtb" ]] || { echo "Missing Raspberry Pi kernel/DTB" >&2; exit 1; }
     [[ "$board_id" == raspi0 || -n "$initrd" ]] || { echo "Missing Raspberry Pi initrd" >&2; exit 1; }
     qemu_args+=(
