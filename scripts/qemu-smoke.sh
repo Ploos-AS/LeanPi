@@ -31,7 +31,7 @@ set +e
 qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot -nic user)
 case "$QEMU_MACHINE" in
   orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
-  raspi3b)
+  raspi2b|raspi3b)
     rootfs_dir="out/${board_id}/rootfs"
     kernel=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'vmlinuz-*' -type f | sort -V | tail -1)
     initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
