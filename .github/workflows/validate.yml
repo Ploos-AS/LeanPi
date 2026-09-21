@@ -16,6 +16,7 @@ jobs:
           bash -n scripts/install-sunxi-boot.sh
           bash -n scripts/install-virt-boot.sh
           bash -n scripts/install-raspi-boot.sh
+          bash -n scripts/build-armv6-kernel.sh
           bash -n scripts/qemu-smoke.sh
 
   board-preflight:
