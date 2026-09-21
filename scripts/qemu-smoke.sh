@@ -37,7 +37,7 @@ timeout --signal=TERM --kill-after=5 "${boot_timeout}s" "$qemu" "${qemu_args[@]}
 rc=${PIPESTATUS[0]}
 set -e
 
-if grep -Eiq 'kernel panic|not syncing|emergency mode|failed to mount.*root' "$log"; then
+if grep -Eiq 'kernel panic|not syncing|emergency mode|failed to mount.*root|dependency failed for.*local file systems|cannot open root device|vfs: unable to mount root' "$log"; then
   echo "QEMU smoke test: FAIL (fatal boot signature)" >&2
   exit 1
 fi
