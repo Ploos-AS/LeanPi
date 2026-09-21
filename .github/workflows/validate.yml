@@ -158,48 +158,59 @@ jobs:
           if-no-files-found: ignore
 
 
-  qemu-raspi3b-armhf:
-    name: QEMU Raspberry Pi 3 armhf boot
+
+  qemu-raspi3b:
+    name: QEMU Raspberry Pi 3 ${{ matrix.arch }} boot
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: armhf
+            board: raspi3b-armhf
+            qemu: qemu-system-arm
+          - arch: arm64
+            board: raspi3b-arm64
+            qemu: qemu-system-aarch64
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
-        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-system-aarch64 qemu-user-static binfmt-support debian-archive-keyring
       - name: Verify QEMU Raspberry Pi 3 machine exists
-        run: qemu-system-arm -machine help | grep -F raspi3b
-      - name: Build LeanPi Raspberry Pi 3 armhf image
-        run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh raspi3b-armhf
+        run: ${{ matrix.qemu }} -machine help | grep -F raspi3b
+      - name: Build LeanPi Raspberry Pi 3 image
+        run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh "${{ matrix.board }}"
       - name: Boot and qualify in QEMU
         run: |
-          sudo chown -R "$USER":"$USER" out/raspi3b-armhf
-          bash scripts/qemu-smoke.sh raspi3b-armhf out/raspi3b-armhf/leanpi-raspi3b-armhf.img 240
+          sudo chown -R "$USER":"$USER" "out/${{ matrix.board }}"
+          bash scripts/qemu-smoke.sh "${{ matrix.board }}" "out/${{ matrix.board }}/leanpi-${{ matrix.board }}.img" 240
       - name: Record qualification PASS
         if: success()
-        run: echo "QEMU_BOARD_PASS=raspi3b-armhf" | tee out/raspi3b-armhf/PASS
+        run: echo "QEMU_BOARD_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
       - name: Write qualification metadata
         if: always()
         shell: bash
         run: |
-          mkdir -p out/raspi3b-armhf
+          mkdir -p "out/${{ matrix.board }}"
           {
-            echo "board=raspi3b-armhf"
-            echo "architecture=armhf"
+            echo "board=${{ matrix.board }}"
+            echo "architecture=${{ matrix.arch }}"
             echo "qemu_machine=raspi3b"
             echo "commit=$GITHUB_SHA"
             echo "run_id=$GITHUB_RUN_ID"
             echo "run_attempt=$GITHUB_RUN_ATTEMPT"
-            qemu-system-arm --version | head -n 1 | sed 's/^/qemu_version=/'
-            sha256sum out/raspi3b-armhf/leanpi-raspi3b-armhf.img 2>/dev/null | sed 's/^/image_sha256=/' || true
-          } > out/raspi3b-armhf/qualification.txt
+            ${{ matrix.qemu }} --version | head -n 1 | sed 's/^/qemu_version=/'
+            sha256sum "out/${{ matrix.board }}/leanpi-${{ matrix.board }}.img" 2>/dev/null | sed 's/^/image_sha256=/' || true
+          } > "out/${{ matrix.board }}/qualification.txt"
       - name: Upload qualification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: raspi3b-armhf-qemu-qualification
+          name: ${{ matrix.board }}-qemu-qualification
           path: |
-            out/raspi3b-armhf/qemu-serial.log
-            out/raspi3b-armhf/qualification.txt
-            out/raspi3b-armhf/PASS
-            out/raspi3b-armhf/*.sha256
+            out/${{ matrix.board }}/qemu-serial.log
+            out/${{ matrix.board }}/qualification.txt
+            out/${{ matrix.board }}/PASS
+            out/${{ matrix.board }}/*.sha256
           if-no-files-found: ignore
