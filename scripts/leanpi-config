@@ -10,6 +10,8 @@ Commands:
   set <key> <value>     Set a configuration value
   list                  List LeanPi configuration
   board                 Print board identity
+  hostname [NAME]       Get or idempotently set hostname
+  timezone [ZONE]       Get or idempotently set timezone
   help                  Show this help
 
 Configuration is stored as key=value in /etc/leanpi/config.
@@ -52,10 +54,42 @@ set_value() {
     trap - EXIT HUP INT TERM
 }
 
+set_hostname() {
+    name=$1
+    current=$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || true)
+    [ "$current" = "$name" ] && return 0
+    printf '%s\n' "$name" > /etc/hostname
+    if command -v hostnamectl >/dev/null 2>&1; then hostnamectl set-hostname "$name"; else hostname "$name"; fi
+}
+
+set_timezone() {
+    zone=$1
+    target=/usr/share/zoneinfo/$zone
+    [ -e "$target" ] || { echo "Unknown timezone: $zone" >&2; exit 2; }
+    current=$(cat /etc/timezone 2>/dev/null || true)
+    [ "$current" = "$zone" ] && [ "$(readlink /etc/localtime 2>/dev/null || true)" = "$target" ] && return 0
+    ln -snf "$target" /etc/localtime
+    printf '%s\n' "$zone" > /etc/timezone
+}
+
 case "${1:-help}" in
     get) [ "$#" -eq 2 ] || { usage >&2; exit 2; }; get_value "$2" ;;
     set) [ "$#" -eq 3 ] || { usage >&2; exit 2; }; set_value "$2" "$3" ;;
     list) [ "$#" -eq 1 ] || { usage >&2; exit 2; }; [ ! -f "$config" ] || cat "$config" ;;
+    hostname)
+        case "$#" in
+            1) hostname ;;
+            2) set_hostname "$2" ;;
+            *) usage >&2; exit 2 ;;
+        esac
+        ;;
+    timezone)
+        case "$#" in
+            1) cat /etc/timezone 2>/dev/null || readlink /etc/localtime | sed 's#^/usr/share/zoneinfo/##' ;;
+            2) set_timezone "$2" ;;
+            *) usage >&2; exit 2 ;;
+        esac
+        ;;
     board)
         [ "$#" -eq 1 ] || { usage >&2; exit 2; }
         if [ -r /etc/leanpi/board ]; then cat /etc/leanpi/board
