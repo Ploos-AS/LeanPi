@@ -31,6 +31,19 @@ set +e
 qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot -nic user)
 case "$QEMU_MACHINE" in
   orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
+  virt)
+    rootfs_dir="out/${board_id}/rootfs"
+    kernel=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'vmlinuz-*' -type f | sort -V | tail -1)
+    initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
+    [[ -n "$kernel" && -n "$initrd" ]] || { echo "Missing virt kernel/initrd" >&2; exit 1; }
+    qemu_args+=(
+      -kernel "$kernel"
+      -initrd "$initrd"
+      -append "root=/dev/vda1 rootwait rw console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      -drive "file=$image,format=raw,if=none,id=rootdisk"
+      -device virtio-blk-device,drive=rootdisk
+    )
+    ;;
   *) echo "No QEMU storage mapping defined for $QEMU_MACHINE" >&2; exit 1 ;;
 esac
 timeout --signal=TERM --kill-after=5 "${boot_timeout}s" "$qemu" "${qemu_args[@]}" 2>&1 | tee "$log"
