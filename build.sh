@@ -21,21 +21,20 @@ mmdebstrap --architectures="$DEBIAN_ARCH" --variant=minbase --components=main --
 mkdir -p "$rootfs_dir/etc/leanpi"
 printf 'LEANPI_BOARD=%s\nLEANPI_BOARD_NAME="%s"\nLEANPI_DEBIAN_RELEASE=%s\nLEANPI_ARCH=%s\nLEANPI_SUPPORT_TIER=%s\n' "$BOARD_ID" "$BOARD_NAME" "$release" "$DEBIAN_ARCH" "$SUPPORT_TIER" > "$rootfs_dir/etc/leanpi/release"
 printf 'leanpi\n' > "$rootfs_dir/etc/hostname"; printf 'auto lo\niface lo inet loopback\n\nallow-hotplug eth0\niface eth0 inet dhcp\n' > "$rootfs_dir/etc/network/interfaces"
-# Emit an unambiguous serial marker once normal multi-user boot is reached.
+# Emit the qualification marker as soon as systemd is running on the real
+# root filesystem. Avoid basic.target: H3 device/udev settling is very slow in QEMU.
 cat > "$rootfs_dir/etc/systemd/system/leanpi-boot-complete.service" <<'EOF'
 [Unit]
 Description=LeanPi qualification boot marker
 DefaultDependencies=no
-After=local-fs.target
-Before=multi-user.target
+After=systemd-remount-fs.service
+Before=sysinit.target
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete'
-[Install]
-WantedBy=multi-user.target
 EOF
-mkdir -p "$rootfs_dir/etc/systemd/system/multi-user.target.wants"
-ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/multi-user.target.wants/leanpi-boot-complete.service"
+mkdir -p "$rootfs_dir/etc/systemd/system/sysinit.target.wants"
+ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/sysinit.target.wants/leanpi-boot-complete.service"
 
 # Keep emulated qualification focused on headless/server boot.  The generic
 # armmp kernel otherwise spends minutes probing H3 multimedia devices that are
