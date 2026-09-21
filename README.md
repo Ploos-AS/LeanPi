@@ -29,6 +29,22 @@ A core rule is:
 
 > A feature does not belong in LeanPi Base merely because modern hardware can afford it.
 
+## Appliance principles
+
+LeanPi is a **lean multi-appliance platform**: one small, reproducible base that can become many purpose-built appliances through profiles and recipes.
+
+- **If LeanPi supports it, LeanPi supports it properly.** A profile is not considered first-class merely because it can install a package.
+- First-class appliance profiles cover the full lifecycle where applicable: **install → configure → optimise → harden → validate → monitor → update → backup → restore → migrate → remove**.
+- Profiles are scriptable, reproducible and non-interactive by design; interactive front ends are optional conveniences over the same automation interfaces.
+- Profiles should be declarative and composable so one board can host one tightly focused appliance or several compatible roles.
+- Defaults are hardware-aware. RAM, CPU, architecture, storage and board class should influence sensible resource settings instead of applying Pi 5-class defaults to a Pi Zero-class machine.
+- Optimisation never justifies weakening security, correctness, data integrity or interoperability.
+- Services remain opt-in. Supporting many appliances must not turn LeanPi Base into a large resident management stack.
+- Prefer upstream software and standard Debian/systemd mechanisms. Create separate LeanPi/Ploos software projects when there is genuinely new technology to build, not merely to wrap an existing service.
+- Every supported appliance category should be able to reach the same quality bar; no category is intentionally second-class.
+
+A practical rule for new ideas is: **new service → LeanPi profile first; new implementation/technology → separate project when justified.**
+
 ## M0 reference target
 
 The initial reference board is the **Orange Pi Zero / Zero LTS family**:
