@@ -57,7 +57,7 @@ jobs:
       - name: Install builder and emulator dependencies
         run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm
       - name: Build bootable LeanPi image
-        run: sudo IMAGE_SIZE_MB=1024 ./build.sh orangepi-pc
+        run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh orangepi-pc
       - name: Boot and qualify in QEMU
         run: scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 120
       - name: Upload serial log
