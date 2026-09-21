@@ -10,7 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash -n build.sh
+      - run: |
+          bash -n build.sh
+          bash -n scripts/install-sunxi-boot.sh
+          bash -n scripts/qemu-smoke.sh
 
   board-preflight:
     name: Board preflight
@@ -21,16 +24,14 @@ jobs:
         board: [orangepi-zero-lts, orangepi-pc, raspi2b, raspi3b-armhf, raspi3b-arm64]
     steps:
       - uses: actions/checkout@v4
-      - name: Validate board metadata
-        run: bash build.sh "${{ matrix.board }}" --check-only
+      - run: bash build.sh "${{ matrix.board }}" --check-only
 
   metadata-consistency:
     name: Board metadata consistency
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check board metadata
-        shell: bash
+      - shell: bash
         run: |
           set -euo pipefail
           ids=()
@@ -45,4 +46,23 @@ jobs:
           done
           duplicates=$(printf '%s\n' "${ids[@]}" | sort | uniq -d)
           [[ -z "$duplicates" ]] || { echo "Duplicate BOARD_ID: $duplicates"; exit 1; }
-          echo 'Board metadata consistency: PASS'
+
+  qemu-orangepi-pc:
+    name: QEMU Orange Pi PC boot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install builder and emulator dependencies
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm
+      - name: Build bootable LeanPi image
+        run: sudo IMAGE_SIZE_MB=1024 ./build.sh orangepi-pc
+      - name: Boot and qualify in QEMU
+        run: scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 120
+      - name: Upload serial log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orangepi-pc-qemu-serial
+          path: out/orangepi-pc/qemu-serial.log
+          if-no-files-found: ignore
