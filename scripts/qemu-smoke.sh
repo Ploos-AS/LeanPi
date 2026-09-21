@@ -51,7 +51,7 @@ case "$QEMU_MACHINE" in
     qemu_args+=(
       -kernel "$kernel"
       -dtb "$dtb"
-      -append "root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      -append "root=LABEL=leanpi-root rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       -drive "file=$image,format=raw,if=sd"
     )
     [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
