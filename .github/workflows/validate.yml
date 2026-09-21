@@ -18,6 +18,7 @@ jobs:
           bash -n scripts/install-raspi-boot.sh
           bash -n scripts/build-armv6-kernel.sh
           bash -n scripts/extract-resource-baseline.sh
+          bash -n scripts/extract-service-audit.sh
           bash -n scripts/check-resource-budget.sh
           bash -n scripts/qemu-smoke.sh
 
@@ -78,6 +79,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Extract service audit
+        if: success()
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
@@ -139,6 +143,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Extract service audit
+        if: success()
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
@@ -169,6 +176,7 @@ jobs:
             out/${{ matrix.board }}/qemu-serial.log
             out/${{ matrix.board }}/qualification.txt
             out/${{ matrix.board }}/resource-baseline.txt
+            out/${{ matrix.board }}/service-audit.txt
             out/${{ matrix.board }}/PASS
             out/${{ matrix.board }}/*.sha256
           if-no-files-found: ignore
@@ -204,6 +212,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Extract service audit
+        if: success()
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
@@ -234,6 +245,7 @@ jobs:
             out/${{ matrix.board }}/qemu-serial.log
             out/${{ matrix.board }}/qualification.txt
             out/${{ matrix.board }}/resource-baseline.txt
+            out/${{ matrix.board }}/service-audit.txt
             out/${{ matrix.board }}/PASS
             out/${{ matrix.board }}/*.sha256
           if-no-files-found: ignore
@@ -258,6 +270,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Extract service audit
+        if: success()
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
@@ -349,6 +364,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Extract service audit
+        if: success()
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
