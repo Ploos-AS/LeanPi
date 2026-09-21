@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [orangepi-zero-lts, orangepi-pc, virt-armhf, virt-arm64, raspi2b, raspi3b-armhf, raspi3b-arm64]
+        board: [orangepi-zero-lts, orangepi-pc, virt-armhf, virt-arm64, raspi0, raspi2b, raspi3b-armhf, raspi3b-arm64]
     steps:
       - uses: actions/checkout@v4
       - run: bash build.sh "${{ matrix.board }}" --check-only
