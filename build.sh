@@ -32,10 +32,10 @@ Before=multi-user.target
 Type=oneshot
 ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console'
 [Install]
-WantedBy=local-fs.target
+WantedBy=multi-user.target
 EOF
-mkdir -p "$rootfs_dir/etc/systemd/system/local-fs.target.wants"
-ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/local-fs.target.wants/leanpi-boot-complete.service"
+mkdir -p "$rootfs_dir/etc/systemd/system/multi-user.target.wants"
+ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/multi-user.target.wants/leanpi-boot-complete.service"
 
 # Keep emulated qualification focused on headless/server boot.  The generic
 # armmp kernel otherwise spends minutes probing H3 multimedia devices that are
