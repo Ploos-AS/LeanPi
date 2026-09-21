@@ -86,6 +86,13 @@ EOF
 # Periodic package-list cleanup is intentionally not implemented as a daemon/timer.
 # Explicit package operations remain predictable and background wakeups stay at zero.
 
+# Headless small-board defaults: disable background facilities that provide no
+# value in LeanPi Base. Masking is deterministic and users can explicitly unmask.
+for unit in     apt-daily.service apt-daily.timer     apt-daily-upgrade.service apt-daily-upgrade.timer     man-db.service man-db.timer     e2scrub_all.service e2scrub_all.timer
+do
+    ln -sf /dev/null "$rootfs_dir/etc/systemd/system/$unit"
+done
+
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
