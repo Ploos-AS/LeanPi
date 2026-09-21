@@ -18,6 +18,7 @@ jobs:
           bash -n scripts/install-raspi-boot.sh
           bash -n scripts/build-armv6-kernel.sh
           bash -n scripts/extract-resource-baseline.sh
+          bash -n scripts/check-resource-budget.sh
           bash -n scripts/qemu-smoke.sh
 
   board-preflight:
@@ -77,6 +78,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Enforce resource budget
+        if: success()
+        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
@@ -135,6 +139,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Enforce resource budget
+        if: success()
+        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_VIRT_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
@@ -197,6 +204,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Enforce resource budget
+        if: success()
+        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
@@ -248,6 +258,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Enforce resource budget
+        if: success()
+        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi2b-armhf" | tee out/raspi2b/PASS
@@ -336,6 +349,9 @@ jobs:
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+      - name: Enforce resource budget
+        if: success()
+        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi0-armv6" | tee out/raspi0/PASS
