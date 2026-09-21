@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [orangepi-zero-lts, orangepi-pc, virt-armhf, raspi2b, raspi3b-armhf, raspi3b-arm64]
+        board: [orangepi-zero-lts, orangepi-pc, virt-armhf, virt-arm64, raspi2b, raspi3b-armhf, raspi3b-arm64]
     steps:
       - uses: actions/checkout@v4
       - run: bash build.sh "${{ matrix.board }}" --check-only
@@ -143,4 +143,49 @@ jobs:
             out/virt-armhf/qualification.txt
             out/virt-armhf/PASS
             out/virt-armhf/*.sha256
+          if-no-files-found: ignore
+
+
+  qemu-virt-arm64:
+    name: QEMU virt arm64 boot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install builder and emulator dependencies
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-system-aarch64 qemu-user-static binfmt-support debian-archive-keyring
+      - name: Build LeanPi virt arm64 image
+        run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh virt-arm64
+      - name: Boot and qualify in QEMU
+        run: |
+          sudo chown -R "$USER":"$USER" out/virt-arm64
+          bash scripts/qemu-smoke.sh virt-arm64 out/virt-arm64/leanpi-virt-arm64.img 180
+      - name: Record qualification PASS
+        if: success()
+        run: echo "QEMU_VIRT_PASS=virt-arm64" | tee out/virt-arm64/PASS
+      - name: Write qualification metadata
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p out/virt-arm64
+          {
+            echo "board=virt-arm64"
+            echo "architecture=arm64"
+            echo "qemu_machine=virt"
+            echo "commit=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "run_attempt=$GITHUB_RUN_ATTEMPT"
+            qemu-system-aarch64 --version | head -n 1 | sed 's/^/qemu_version=/'
+            sha256sum out/virt-arm64/leanpi-virt-arm64.img 2>/dev/null | sed 's/^/image_sha256=/' || true
+          } > out/virt-arm64/qualification.txt
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virt-arm64-qemu-qualification
+          path: |
+            out/virt-arm64/qemu-serial.log
+            out/virt-arm64/qualification.txt
+            out/virt-arm64/PASS
+            out/virt-arm64/*.sha256
           if-no-files-found: ignore
