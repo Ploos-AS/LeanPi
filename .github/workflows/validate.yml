@@ -5,11 +5,44 @@ on:
   pull_request:
 
 jobs:
-  m0:
+  shell:
+    name: Shell syntax
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Shell syntax
-        run: bash -n build.sh
-      - name: Board metadata preflight
-        run: bash build.sh orangepi-zero-lts --check-only
+      - run: bash -n build.sh
+
+  board-preflight:
+    name: Board preflight
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [orangepi-zero-lts, orangepi-pc, raspi2b, raspi3b-armhf, raspi3b-arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate board metadata
+        run: bash build.sh "${{ matrix.board }}" --check-only
+
+  metadata-consistency:
+    name: Board metadata consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check board metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          ids=()
+          for board in boards/*.conf; do
+            source "$board"
+            [[ -n "${BOARD_ID:-}" && -n "${DEBIAN_ARCH:-}" && -n "${DTB:-}" && -n "${SUPPORT_TIER:-}" ]]
+            ids+=("$BOARD_ID")
+            if [[ "$SUPPORT_TIER" == "emulated" ]]; then
+              [[ "${EMULATOR:-}" == "qemu" && -n "${QEMU_MACHINE:-}" ]]
+            fi
+            unset BOARD_ID BOARD_NAME ARCH DEBIAN_ARCH SOC_FAMILY SOC BOOTLOADER UBOOT_DEFCONFIG DTB KERNEL_FAMILY SERIAL_CONSOLE ROOTFS_TYPE EMULATOR QEMU_MACHINE SUPPORT_TIER
+          done
+          duplicates=$(printf '%s\n' "${ids[@]}" | sort | uniq -d)
+          [[ -z "$duplicates" ]] || { echo "Duplicate BOARD_ID: $duplicates"; exit 1; }
+          echo 'Board metadata consistency: PASS'
