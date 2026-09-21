@@ -12,6 +12,7 @@ Commands:
   board                 Print board identity
   hostname [NAME]       Get or idempotently set hostname
   timezone [ZONE]       Get or idempotently set timezone
+  logging [MODE]        Get/set logging: volatile, hybrid, persistent
   help                  Show this help
 
 Configuration is stored as key=value in /etc/leanpi/config.
@@ -62,6 +63,41 @@ set_hostname() {
     if command -v hostnamectl >/dev/null 2>&1; then hostnamectl set-hostname "$name"; else hostname "$name"; fi
 }
 
+set_logging() {
+    mode=$1
+    case "$mode" in
+        volatile) storage=volatile ;;
+        persistent) storage=persistent ;;
+        hybrid) storage=auto ;;
+        *) echo "Invalid logging mode: $mode" >&2; exit 2 ;;
+    esac
+    dir=/etc/systemd/journald.conf.d
+    file=$dir/leanpi.conf
+    wanted="[Journal]
+Storage=$storage
+"
+    current=$(cat "$file" 2>/dev/null || true)
+    [ "$current" = "$wanted" ] && return 0
+    mkdir -p "$dir"
+    tmp=$(mktemp "$dir/leanpi.conf.XXXXXX")
+    trap 'rm -f "$tmp"' EXIT HUP INT TERM
+    printf '%s' "$wanted" > "$tmp"
+    chmod 0644 "$tmp"
+    mv "$tmp" "$file"
+    trap - EXIT HUP INT TERM
+    if command -v systemctl >/dev/null 2>&1; then systemctl try-restart systemd-journald.service >/dev/null 2>&1 || true; fi
+}
+
+get_logging() {
+    value=$(awk -F= '/^Storage=/ {print $2; exit}' /etc/systemd/journald.conf.d/leanpi.conf 2>/dev/null || true)
+    case "$value" in
+        volatile) echo volatile ;;
+        persistent) echo persistent ;;
+        auto|"") echo hybrid ;;
+        *) echo "$value" ;;
+    esac
+}
+
 set_timezone() {
     zone=$1
     target=/usr/share/zoneinfo/$zone
@@ -80,6 +116,13 @@ case "${1:-help}" in
         case "$#" in
             1) hostname ;;
             2) set_hostname "$2" ;;
+            *) usage >&2; exit 2 ;;
+        esac
+        ;;
+    logging)
+        case "$#" in
+            1) get_logging ;;
+            2) set_logging "$2" ;;
             *) usage >&2; exit 2 ;;
         esac
         ;;
