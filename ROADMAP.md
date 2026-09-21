@@ -60,16 +60,48 @@ First-class early targets:
 
 For Raspberry Pi 3, measure the 32-bit and 64-bit profiles against the same resource metrics so architecture overhead is visible rather than assumed.
 
-## M3 — Profiles and software
+## M3 — LeanPi Tools, profiles and software
 
-Keep the base minimal while adding opt-in profiles:
+Keep the base minimal. Administration features must remain lightweight and opt-in where practical, and every interactive tool should also support non-interactive automation.
 
+Core LeanPi Tools:
+- `leanpi` / `leanpi-launcher` — lightweight launcher for administration tools.
+- `leanpi-config` — network, locale, hostname, hardware and system configuration.
+- `leanpi-software` — recipe-driven software installation and removal.
+- `leanpi-services` — inspect, enable, disable and manage services.
+- `leanpi-log` — selectable volatile, hybrid and persistent logging modes.
+
+Initial opt-in profiles:
 - headless-server
 - network-appliance
 - IoT/MQTT
 - monitoring-agent
 - retro/BBS networking
 - HAM/radio appliance
+
+Design requirements:
+- LeanPi Base must not grow merely because larger boards can afford extra features.
+- Tools should use standard Debian/systemd facilities rather than replacing them.
+- CLI/non-interactive operation is first-class so configuration can be reproduced in CI and provisioning.
+- Small ARMv6/ARMv7 systems remain a resource-budget gate for core tools.
+
+## M4 — System management and automation
+
+- `leanpi-backup` — system backup/restore with configurable retention and destinations.
+- `leanpi-drive` — storage, filesystem, swap and network-mount management.
+- `leanpi-update` — controlled LeanPi/system update workflow.
+- `leanpi-firstboot` — reproducible unattended first-boot provisioning.
+- `leanpi-benchmark` — lightweight resource and performance measurements.
+- Expand the recipe catalogue while keeping software outside LeanPi Base by default.
+
+## M5 — Additional architectures
+
+Apply the same lean-base and measurable-qualification principles to:
+
+- riscv64
+- amd64
+
+ARM64 is no longer deferred to the additional-architecture milestone: it enters early through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
 
 ## M4 — Additional architectures
 
@@ -78,7 +110,7 @@ Apply the same lean-base and measurable-qualification principles to:
 - riscv64
 - amd64
 
-ARM64 is no longer deferred to M4: it enters early through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
+
 
 ## Long-term policy
 
