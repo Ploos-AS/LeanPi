@@ -93,6 +93,7 @@ do
     ln -sf /dev/null "$rootfs_dir/etc/systemd/system/$unit"
 done
 
+install -Dm755 scripts/service-audit.sh "$rootfs_dir/usr/local/sbin/leanpi-service-audit"
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
 if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
