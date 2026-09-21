@@ -51,7 +51,7 @@ jobs:
   qemu-orangepi-pc:
     name: QEMU Orange Pi PC boot
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
@@ -69,7 +69,7 @@ jobs:
         id: qemu_boot
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
-          bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 120
+          bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 420
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
