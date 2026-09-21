@@ -57,6 +57,7 @@ fi
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
 # Install board-family boot payload before copying the completed rootfs.
 if [[ $KERNEL_FAMILY == sunxi ]]; then bash scripts/install-sunxi-boot.sh "$BOARD_ID" "$rootfs_dir" "$image_path"; fi
+if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
 loopdev=; mnt=; cleanup(){ set +e; [[ -n $mnt ]] && mountpoint -q "$mnt" && umount "$mnt"; [[ -n $mnt && -d $mnt ]] && rmdir "$mnt"; [[ -n $loopdev ]] && losetup -d "$loopdev"; }; trap cleanup EXIT
 loopdev=$(losetup --find --show --partscan "$image_path"); mkfs.ext4 -F -L leanpi-root "${loopdev}p1" >/dev/null; mnt=$(mktemp -d); mount "${loopdev}p1" "$mnt"; rsync -aHAX --numeric-ids "$rootfs_dir/" "$mnt/"; sync; umount "$mnt"; rmdir "$mnt"; mnt=; losetup -d "$loopdev"; loopdev=
 echo 'LeanPi M1.2 image assembly: PASS'; echo "Image: $image_path"; du -sh "$rootfs_dir"; sha256sum "$image_path" | tee "${image_path}.sha256"
