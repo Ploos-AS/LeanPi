@@ -99,3 +99,48 @@ jobs:
             out/orangepi-pc/PASS
             out/orangepi-pc/*.sha256
           if-no-files-found: ignore
+
+
+  qemu-virt-armhf:
+    name: QEMU virt armhf boot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install builder and emulator dependencies
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
+      - name: Build LeanPi virt armhf image
+        run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh virt-armhf
+      - name: Boot and qualify in QEMU
+        run: |
+          sudo chown -R "$USER":"$USER" out/virt-armhf
+          bash scripts/qemu-smoke.sh virt-armhf out/virt-armhf/leanpi-virt-armhf.img 180
+      - name: Record qualification PASS
+        if: success()
+        run: echo "QEMU_VIRT_PASS=virt-armhf" | tee out/virt-armhf/PASS
+      - name: Write qualification metadata
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p out/virt-armhf
+          {
+            echo "board=virt-armhf"
+            echo "architecture=armhf"
+            echo "qemu_machine=virt"
+            echo "commit=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "run_attempt=$GITHUB_RUN_ATTEMPT"
+            qemu-system-arm --version | head -n 1 | sed 's/^/qemu_version=/'
+            sha256sum out/virt-armhf/leanpi-virt-armhf.img 2>/dev/null | sed 's/^/image_sha256=/' || true
+          } > out/virt-armhf/qualification.txt
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virt-armhf-qemu-qualification
+          path: |
+            out/virt-armhf/qemu-serial.log
+            out/virt-armhf/qualification.txt
+            out/virt-armhf/PASS
+            out/virt-armhf/*.sha256
+          if-no-files-found: ignore
