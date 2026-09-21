@@ -60,6 +60,27 @@ First-class early targets:
 
 For Raspberry Pi 3, measure the 32-bit and 64-bit profiles against the same resource metrics so architecture overhead is visible rather than assumed.
 
+## Design doctrine: small-board first
+
+LeanPi may learn from mature minimal-SBC distributions such as DietPi, but implements its own tooling and policy. Every feature must justify its RAM, storage, CPU, write-I/O and maintenance cost.
+
+- Base image stays headless, minimal and useful without a management daemon.
+- No always-running LeanPi daemon unless a feature fundamentally requires one.
+- Prefer shell/static or already-present Debian tooling over new runtimes and dependency stacks.
+- Interactive tools must also expose non-interactive CLI operation.
+- Optional features belong in recipes/profiles, not LeanPi Base.
+- Prefer on-demand execution to polling and resident background processes.
+- Avoid duplicate functionality already provided well by Debian/systemd.
+- Logging defaults must minimise persistent writes while preserving useful diagnostics.
+- Network services are opt-in; no telemetry, discovery or cloud dependency by default.
+- Features are measured on the weakest supported boards first. Faster boards do not define the base budget.
+- A new base dependency requires measured justification and a documented removal/rollback path.
+- Optimisation must not trade away security, data integrity or reproducibility.
+
+### Feature admission gate
+
+Before a feature enters LeanPi Base it must answer: can this be optional; can it run on demand; can an existing base tool do it; what does it add to image size, idle RAM, process/service count and persistent writes; and does it remain practical on ARMv6/ARMv7-class hardware? CI/qualification should capture these costs where measurable.
+
 ## M3 — LeanPi Tools, profiles and software
 
 Keep the base minimal. Administration features must remain lightweight and opt-in where practical, and every interactive tool should also support non-interactive automation.
