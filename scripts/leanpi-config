@@ -1,0 +1,68 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<'EOF'
+Usage: leanpi-config <command> [args]
+
+Commands:
+  get <key>             Read a configuration value
+  set <key> <value>     Set a configuration value
+  list                  List LeanPi configuration
+  board                 Print board identity
+  help                  Show this help
+
+Configuration is stored as key=value in /etc/leanpi/config.
+Commands are non-interactive and intended for humans, scripts and provisioning.
+EOF
+}
+
+config=/etc/leanpi/config
+
+valid_key() {
+    case "$1" in
+        ''|*[!A-Za-z0-9_.-]*) return 1 ;;
+        *) return 0 ;;
+    esac
+}
+
+get_value() {
+    valid_key "$1" || { echo "Invalid key: $1" >&2; exit 2; }
+    [ -f "$config" ] || exit 1
+    value=$(awk -F= -v k="$1" '$1 == k {sub(/^[^=]*=/, ""); print; found=1; exit} END {if (!found) exit 1}' "$config") ||
+        exit 1
+    printf '%s\n' "$value"
+}
+
+set_value() {
+    key=$1
+    value=$2
+    valid_key "$key" || { echo "Invalid key: $key" >&2; exit 2; }
+    case "$value" in *'
+'*|*'\r'*) echo "Multiline values are not supported" >&2; exit 2;; esac
+    mkdir -p /etc/leanpi
+    tmp=$(mktemp /etc/leanpi/config.XXXXXX)
+    trap 'rm -f "$tmp"' EXIT HUP INT TERM
+    if [ -f "$config" ]; then
+        awk -F= -v k="$key" '$1 != k' "$config" > "$tmp"
+    fi
+    printf '%s=%s\n' "$key" "$value" >> "$tmp"
+    chmod 0644 "$tmp"
+    mv "$tmp" "$config"
+    trap - EXIT HUP INT TERM
+}
+
+case "${1:-help}" in
+    get) [ "$#" -eq 2 ] || { usage >&2; exit 2; }; get_value "$2" ;;
+    set) [ "$#" -eq 3 ] || { usage >&2; exit 2; }; set_value "$2" "$3" ;;
+    list) [ "$#" -eq 1 ] || { usage >&2; exit 2; }; [ ! -f "$config" ] || cat "$config" ;;
+    board)
+        [ "$#" -eq 1 ] || { usage >&2; exit 2; }
+        if [ -r /etc/leanpi/board ]; then cat /etc/leanpi/board
+        elif [ -r /proc/device-tree/model ]; then tr -d '\000' < /proc/device-tree/model; printf '\n'
+        else uname -m
+        fi
+        ;;
+    help|-h|--help) usage ;;
+    *) echo "Unknown command: $1" >&2; usage >&2; exit 2 ;;
+esac
