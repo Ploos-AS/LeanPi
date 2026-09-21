@@ -34,6 +34,23 @@ WantedBy=multi-user.target
 EOF
 ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/multi-user.target.wants/leanpi-boot-complete.service"
 
+# Keep emulated qualification focused on headless/server boot.  The generic
+# armmp kernel otherwise spends minutes probing H3 multimedia devices that are
+# irrelevant to LeanPi's serial CI gate.
+if [[ "${SUPPORT_TIER:-}" == emulated && "${SOC_FAMILY:-}" == sun8i ]]; then
+  mkdir -p "$rootfs_dir/etc/modprobe.d"
+  cat > "$rootfs_dir/etc/modprobe.d/leanpi-qemu-headless.conf" <<'EOF'
+# LeanPi QEMU qualification: skip nonessential H3 multimedia stacks.
+blacklist lima
+blacklist sunxi_cedrus
+blacklist sun8i_drm_hdmi
+blacklist sun8i_mixer
+blacklist sun4i_tcon
+blacklist sun4i_drm
+blacklist sunxi_ir
+EOF
+fi
+
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
 # Install board-family boot payload before copying the completed rootfs.
 if [[ $KERNEL_FAMILY == sunxi ]]; then bash scripts/install-sunxi-boot.sh "$BOARD_ID" "$rootfs_dir" "$image_path"; fi
