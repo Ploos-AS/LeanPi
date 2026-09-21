@@ -71,3 +71,18 @@ raspi3b-arm64
 ```
 
 Not every lane needs to become green at the same milestone. In particular, `raspi0-armel` is constrained by Debian 13's legacy armel status and must report that limitation explicitly rather than weakening the normal armhf baseline.
+
+
+## Qualification records
+
+A QEMU target is not considered qualified merely because an image builds or QEMU starts. A recorded **QEMU board PASS** requires the serial log to contain `LEANPI_BOOT_COMPLETE` and no fatal boot signature.
+
+CI archives an evidence bundle for each qualification attempt. For `orangepi-pc` it contains:
+
+- the complete serial log;
+- the LeanPi commit SHA and GitHub Actions run/attempt IDs;
+- QEMU version and machine name;
+- architecture;
+- SHA-256 of the tested image.
+
+The evidence artifact is the authoritative record for an individual CI run. Repository documentation may summarize a PASS only after that evidence exists. Failed or incomplete runs must not be promoted to PASS.
