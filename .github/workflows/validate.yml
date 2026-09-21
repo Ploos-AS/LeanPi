@@ -294,3 +294,54 @@ jobs:
           name: leanpi-armv6-kernel
           path: out/kernel-armv6
           if-no-files-found: error
+
+
+  qemu-raspi0:
+    name: QEMU Raspberry Pi Zero ARMv6 boot
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: kernel-armv6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install builder and emulator dependencies
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
+      - name: Download ARMv6 kernel
+        uses: actions/download-artifact@v4
+        with:
+          name: leanpi-armv6-kernel
+          path: out/kernel-armv6
+      - name: Verify QEMU Raspberry Pi Zero machine exists
+        run: qemu-system-arm -machine help | grep -F raspi0
+      - name: Build LeanPi Raspberry Pi Zero image
+        run: sudo env IMAGE_SIZE_MB=1024 ARMV6_KERNEL_DIR=out/kernel-armv6 bash ./build.sh raspi0
+      - name: Boot and qualify in QEMU
+        run: |
+          sudo chown -R "$USER":"$USER" out/raspi0
+          bash scripts/qemu-smoke.sh raspi0 out/raspi0/leanpi-raspi0.img 300
+      - name: Record qualification PASS
+        if: success()
+        run: echo "QEMU_BOARD_PASS=raspi0-armv6" | tee out/raspi0/PASS
+      - name: Write qualification metadata
+        if: always()
+        run: |
+          mkdir -p out/raspi0
+          {
+            echo "board=raspi0"
+            echo "architecture=armel-armv6"
+            echo "qemu_machine=raspi0"
+            echo "commit=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            qemu-system-arm --version | head -n 1 | sed 's/^/qemu_version=/'
+            sha256sum out/raspi0/leanpi-raspi0.img 2>/dev/null | sed 's/^/image_sha256=/' || true
+          } > out/raspi0/qualification.txt
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspi0-qemu-qualification
+          path: |
+            out/raspi0/qemu-serial.log
+            out/raspi0/qualification.txt
+            out/raspi0/PASS
+            out/raspi0/*.sha256
+          if-no-files-found: ignore
