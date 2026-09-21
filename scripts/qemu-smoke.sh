@@ -29,7 +29,11 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot -nic user)
+qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
+# Some board models do not expose a QEMU NIC. Generic virt and sunxi do.
+case "$QEMU_MACHINE" in
+  virt|orangepi-pc) qemu_args+=(-nic user) ;;
+esac
 case "$QEMU_MACHINE" in
   orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
   raspi0|raspi2b|raspi3b)
@@ -47,7 +51,7 @@ case "$QEMU_MACHINE" in
     qemu_args+=(
       -kernel "$kernel"
       -dtb "$dtb"
-      -append "root=/dev/mmcblk0p1 rootwait rw console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      -append "root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       -drive "file=$image,format=raw,if=sd"
     )
     [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
