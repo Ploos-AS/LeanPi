@@ -100,6 +100,36 @@ Initial opt-in profiles:
 - retro/BBS networking
 - HAM/radio appliance
 
+### Multi-appliance profile roadmap
+
+LeanPi should grow a broad, quality-gated appliance catalogue. IRC, Mystic BBS, honeypots, Prometheus/monitoring and Home Assistant/IoT are important early showcase areas, but the goal is for **every supported profile to shine** rather than creating privileged and second-class categories.
+
+Planned profile families include:
+- **Communication:** IRCd, IRC bouncers, IRC bots, Mystic BBS, FidoNet, Gopher and related communication services.
+- **Network infrastructure:** DNS resolver/authoritative DNS, NTP, DHCP, VPN/Headscale, reverse proxy and network utilities.
+- **Security:** SSH/web/multi-service honeypots, security sensors and defensive monitoring, with isolation and safe defaults.
+- **Monitoring/observability:** Prometheus nodes/exporters, network probes, syslog collectors, SNMP monitoring and lightweight dashboards where hardware permits.
+- **Home automation/IoT:** MQTT, Home Assistant satellites/edge roles, Bluetooth proxy, Zigbee/Thread gateways, sensor gateways and Node-RED-class workflows where appropriate.
+- **Servers:** lightweight web/file/Git services and game-server profiles such as Minecraft, sized to hardware capability.
+- **Retro:** BBS gateways, serial↔TCP services and Amiga/Atari/C64/retro-network support.
+- **HAM/radio:** lightweight radio and network-service roles suitable for supported SBCs.
+
+Profiles should be declarative and composable. The roadmap should support workflows conceptually equivalent to `leanpi enable <profile>` / `leanpi apply <profile-set>`, without requiring a permanently running LeanPi management daemon.
+
+For first-class profiles, progressively add common lifecycle capabilities where relevant:
+- install and remove
+- reproducible configuration
+- board/resource-aware optimisation
+- hardening and firewall integration
+- `doctor`/health validation
+- metrics/monitoring integration
+- controlled update
+- backup and restore
+- migration/export
+- automated qualification tests
+
+Longer-term: add an **Appliance Builder** that can combine target-board metadata and selected profiles to produce a reproducible, minimal image ready to flash. This must reuse the same profile/recipe definitions used for normal provisioning rather than creating a second configuration system.
+
 Design requirements:
 - LeanPi Base must not grow merely because larger boards can afford extra features.
 - Tools should use standard Debian/systemd facilities rather than replacing them.
@@ -123,15 +153,6 @@ Apply the same lean-base and measurable-qualification principles to:
 - amd64
 
 ARM64 is no longer deferred to the additional-architecture milestone: it enters early through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
-
-## M4 — Additional architectures
-
-Apply the same lean-base and measurable-qualification principles to:
-
-- riscv64
-- amd64
-
-
 
 ## Long-term policy
 
