@@ -95,13 +95,15 @@ if grep -Fq 'LEANPI_BOOT_COMPLETE' "$log"; then
 fi
 
 echo '--- QEMU boot diagnostics ---' >&2
-for pattern in 'U-Boot' 'Starting kernel' 'Linux version' 'Waiting for root' 'leanpi-root' 'systemd'; do
+for pattern in 'U-Boot' 'Starting kernel' 'Linux version' 'mmc' 'leanpi-root' 'EXT4-fs' 'Mounted root' 'systemd' 'LEANPI_BOOT_COMPLETE'; do
   if grep -Fq "$pattern" "$log"; then
     echo "reached: $pattern" >&2
   else
     echo "missing: $pattern" >&2
   fi
 done
+echo '--- root/storage diagnostics ---' >&2
+grep -Ei 'mmc|sdhci|leanpi-root|EXT4-fs|VFS:|root device|mounted root|waiting for root' "$log" | tail -n 60 >&2 || true
 echo '--- serial log tail ---' >&2
 tail -n 80 "$log" >&2 || true
 
