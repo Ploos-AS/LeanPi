@@ -10,5 +10,6 @@ mkdir -p "$(dirname "$out")"
   systemctl list-units --type=service --state=running --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort
   echo "[timers]"
   systemctl list-unit-files --type=timer --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort
+  echo "LEANPI_SERVICE_AUDIT_END=1"
 } > "$out"
 cat "$out"
