@@ -193,7 +193,7 @@ jobs:
         include:
           - arch: armhf
             board: raspi3b-armhf
-            qemu: qemu-system-arm
+            qemu: qemu-system-aarch64
           - arch: arm64
             board: raspi3b-arm64
             qemu: qemu-system-aarch64
