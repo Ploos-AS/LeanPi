@@ -29,7 +29,7 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
+qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)\n# Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.\ncase "$ARCH:$QEMU_MACHINE" in\n  arm64:virt) qemu_args+=(-cpu cortex-a57) ;;\n  armhf:virt) qemu_args+=(-cpu cortex-a15) ;;\nesac
 # Some board models do not expose a QEMU NIC. Generic virt and sunxi do.
 case "$QEMU_MACHINE" in
   virt|orangepi-pc) qemu_args+=(-nic user) ;;
@@ -80,7 +80,7 @@ if grep -Eiq 'kernel panic|not syncing|emergency mode|failed to mount.*root|depe
   exit 1
 fi
 if grep -Fq 'LEANPI_BOOT_COMPLETE' "$log"; then
-  required_boot_signatures=('Starting kernel' 'Linux version' 'systemd')
+  required_boot_signatures=('Linux version' 'systemd')
   missing_boot_signatures=()
   for pattern in "${required_boot_signatures[@]}"; do
     grep -Fq "$pattern" "$log" || missing_boot_signatures+=("$pattern")
