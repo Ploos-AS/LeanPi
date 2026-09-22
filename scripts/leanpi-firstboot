@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+state=/var/lib/leanpi/firstboot.done
+[ -e "$state" ] && exit 0
+mkdir -p /var/lib/leanpi
+
+# Keep first boot deliberately small. Board/profile provisioning can add
+# executable hooks without making a resident LeanPi service necessary.
+for hook in /etc/leanpi/firstboot.d/*; do
+    [ -f "$hook" ] && [ -x "$hook" ] || continue
+    "$hook"
+done
+
+tmp=$(mktemp /var/lib/leanpi/firstboot.done.XXXXXX)
+printf 'LEANPI_FIRSTBOOT=1\n' > "$tmp"
+chmod 0644 "$tmp"
+mv "$tmp" "$state"
+echo LEANPI_FIRSTBOOT_COMPLETE
