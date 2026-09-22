@@ -1,0 +1,13 @@
+[Unit]
+Description=LeanPi first boot provisioning
+After=local-fs.target
+Before=network.target
+ConditionPathExists=!/var/lib/leanpi/firstboot.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/leanpi-firstboot
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
