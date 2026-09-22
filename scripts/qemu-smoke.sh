@@ -59,10 +59,16 @@ case "$QEMU_MACHINE" in
     fi
     [[ -n "$kernel" && -n "$dtb" ]] || { echo "Missing Raspberry Pi kernel/DTB" >&2; exit 1; }
     [[ "$board_id" == raspi0 || -n "$initrd" ]] || { echo "Missing Raspberry Pi initrd" >&2; exit 1; }
+    loopdev=$(sudo losetup --find --show --partscan "$image")
+    trap 'sudo losetup -d "$loopdev" 2>/dev/null || true' EXIT
+    root_partuuid=$(sudo blkid -s PARTUUID -o value "${loopdev}p1")
+    [[ -n "$root_partuuid" ]] || { echo "Missing Raspberry Pi root PARTUUID" >&2; exit 1; }
+    sudo losetup -d "$loopdev"
+    trap - EXIT
     qemu_args+=(
       -kernel "$kernel"
       -dtb "$dtb"
-      -append "root=LABEL=leanpi-root rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      -append "root=PARTUUID=$root_partuuid rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       -drive "file=$image,format=raw,if=sd"
     )
     [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
