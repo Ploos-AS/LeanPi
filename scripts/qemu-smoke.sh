@@ -15,11 +15,12 @@ source "$board_file"
 [[ "${EMULATOR:-}" == qemu ]] || { echo "$board_id is not a QEMU target" >&2; exit 1; }
 [[ -n "${QEMU_MACHINE:-}" ]] || { echo "Missing QEMU_MACHINE" >&2; exit 1; }
 
-case "$ARCH" in
-  armel) qemu=qemu-system-arm ;;
-  armhf) qemu=qemu-system-arm ;;
-  arm64) qemu=qemu-system-aarch64 ;;
-  *) echo "Unsupported QEMU architecture: $ARCH" >&2; exit 1 ;;
+case "$ARCH:$QEMU_MACHINE" in
+  armhf:raspi3b) qemu=qemu-system-aarch64 ;;
+  armel:*) qemu=qemu-system-arm ;;
+  armhf:*) qemu=qemu-system-arm ;;
+  arm64:*) qemu=qemu-system-aarch64 ;;
+  *) echo "Unsupported QEMU architecture/machine: $ARCH/$QEMU_MACHINE" >&2; exit 1 ;;
 esac
 command -v "$qemu" >/dev/null || { echo "Missing $qemu" >&2; exit 1; }
 
