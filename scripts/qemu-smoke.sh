@@ -29,7 +29,12 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)\n# Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.\ncase "$ARCH:$QEMU_MACHINE" in\n  arm64:virt) qemu_args+=(-cpu cortex-a57) ;;\n  armhf:virt) qemu_args+=(-cpu cortex-a15) ;;\nesac
+qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
+# Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.
+case "$ARCH:$QEMU_MACHINE" in
+  arm64:virt) qemu_args+=(-cpu cortex-a57) ;;
+  armhf:virt) qemu_args+=(-cpu cortex-a15) ;;
+esac
 # Some board models do not expose a QEMU NIC. Generic virt and sunxi do.
 case "$QEMU_MACHINE" in
   virt|orangepi-pc) qemu_args+=(-nic user) ;;
