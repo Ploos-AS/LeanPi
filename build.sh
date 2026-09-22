@@ -93,6 +93,10 @@ do
     ln -sf /dev/null "$rootfs_dir/etc/systemd/system/$unit"
 done
 
+install -Dm755 scripts/leanpi-firstboot "$rootfs_dir/usr/local/sbin/leanpi-firstboot"
+install -Dm644 systemd/leanpi-firstboot.service "$rootfs_dir/etc/systemd/system/leanpi-firstboot.service"
+mkdir -p "$rootfs_dir/etc/systemd/system/multi-user.target.wants" "$rootfs_dir/etc/leanpi/firstboot.d"
+ln -sf ../leanpi-firstboot.service "$rootfs_dir/etc/systemd/system/multi-user.target.wants/leanpi-firstboot.service"
 install -Dm755 scripts/service-audit.sh "$rootfs_dir/usr/local/sbin/leanpi-service-audit"
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
