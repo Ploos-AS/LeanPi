@@ -72,7 +72,7 @@ cat > "$rootfs_dir/etc/systemd/system/tmp.mount.d/leanpi.conf" <<'EOF'
 [Mount]
 Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
 EOF
-ln -sf /usr/lib/systemd/system/tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
+ln -sf ../tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
 
 # Keep /var/tmp persistent: applications may rely on data surviving reboot.
 # Bound APT's package cache instead of spending scarce RAM on another tmpfs.
