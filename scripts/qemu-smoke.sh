@@ -31,8 +31,9 @@ echo "Serial log: $log"
 set +e
 qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
 case "$QEMU_MACHINE" in
-  orangepi-pc) qemu_args+=(-m 1G) ;;
-  *) qemu_args+=(-m 512) ;;
+  orangepi-pc|raspi2b|raspi3b) qemu_args+=(-m 1G) ;;
+  raspi0) qemu_args+=(-m 512M) ;;
+  *) qemu_args+=(-m 512M) ;;
 esac
 # Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.
 case "$ARCH:$QEMU_MACHINE" in
