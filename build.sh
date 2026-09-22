@@ -67,7 +67,7 @@ Compress=yes
 EOF
 
 # Keep temporary writes off flash without allowing tmpfs to consume unbounded RAM.
-mkdir -p "$rootfs_dir/etc/systemd/system/tmp.mount.d"
+mkdir -p "$rootfs_dir/etc/systemd/system/tmp.mount.d" "$rootfs_dir/etc/systemd/system/local-fs.target.wants"
 cat > "$rootfs_dir/etc/systemd/system/tmp.mount.d/leanpi.conf" <<'EOF'
 [Mount]
 Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
