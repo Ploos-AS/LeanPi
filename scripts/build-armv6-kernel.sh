@@ -19,8 +19,8 @@ export CROSS_COMPILE=${CROSS_COMPILE:-arm-linux-gnueabihf-}
 make -C "$work/linux" bcmrpi_defconfig
 # QEMU Pi Zero direct-kernel boot has no initramfs, so root storage and ext4
 # must be built into the kernel rather than available only as modules.
-"$work/linux/scripts/config" --file "$work/linux/.config" \\
-  -e MMC -e MMC_BLOCK -e MMC_BCM2835 -e MMC_SDHCI -e MMC_SDHCI_PLTFM -e MMC_SDHCI_IPROC \\
+"$work/linux/scripts/config" --file "$work/linux/.config" \
+  -e MMC -e MMC_BLOCK -e MMC_BCM2835 -e MMC_SDHCI -e MMC_SDHCI_PLTFM -e MMC_SDHCI_IPROC \
   -e EXT4_FS -e DEVTMPFS -e DEVTMPFS_MOUNT
 make -C "$work/linux" olddefconfig
 for opt in CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
