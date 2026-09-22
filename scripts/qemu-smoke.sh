@@ -29,7 +29,7 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
+qemu_args=(-M "$QEMU_MACHINE" -m 512 -nographic -no-reboot)
 # Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.
 case "$ARCH:$QEMU_MACHINE" in
   arm64:virt) qemu_args+=(-cpu cortex-a57) ;;
@@ -71,7 +71,7 @@ case "$QEMU_MACHINE" in
       -initrd "$initrd"
       -append "root=/dev/vda1 rootwait rw console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       -drive "file=$image,format=raw,if=none,id=rootdisk"
-      -device virtio-blk-pci,drive=rootdisk
+      -device virtio-blk-device,drive=rootdisk
     )
     ;;
   *) echo "No QEMU storage mapping defined for $QEMU_MACHINE" >&2; exit 1 ;;
