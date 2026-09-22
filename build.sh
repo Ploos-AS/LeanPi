@@ -17,7 +17,7 @@ release=${DEBIAN_RELEASE:-trixie}; mirror=${DEBIAN_MIRROR:-https://deb.debian.or
 rootfs_dir=${rootfs_dir:-"${out_dir}/rootfs"}; image_path=${image_path:-"${out_dir}/leanpi-${BOARD_ID}.img"}; image_size_mb=${IMAGE_SIZE_MB:-768}; mkdir -p "$out_dir"
 if [[ -e $rootfs_dir ]]; then [[ -d $rootfs_dir && -z $(find "$rootfs_dir" -mindepth 1 -maxdepth 1 -print -quit) ]] || { echo "Refusing non-empty path: $rootfs_dir" >&2; exit 1; }; else mkdir -p "$rootfs_dir"; fi
 echo "Bootstrapping Debian $release ($DEBIAN_ARCH)"
-mmdebstrap --architectures="$DEBIAN_ARCH" --variant=minbase --components=main --include=systemd-sysv,ca-certificates,iproute2,ifupdown,isc-dhcp-client,dropbear "$release" "$rootfs_dir" "$mirror"
+mmdebstrap --architectures="$DEBIAN_ARCH" --variant=minbase --components=main --include=systemd-sysv,ca-certificates,iproute2,ifupdown,isc-dhcp-client,dropbear,procps "$release" "$rootfs_dir" "$mirror"
 mkdir -p "$rootfs_dir/etc/leanpi"
 printf 'LEANPI_BOARD=%s\nLEANPI_BOARD_NAME="%s"\nLEANPI_DEBIAN_RELEASE=%s\nLEANPI_ARCH=%s\nLEANPI_SUPPORT_TIER=%s\n' "$BOARD_ID" "$BOARD_NAME" "$release" "$DEBIAN_ARCH" "$SUPPORT_TIER" > "$rootfs_dir/etc/leanpi/release"
 printf 'leanpi\n' > "$rootfs_dir/etc/hostname"; printf 'auto lo\niface lo inet loopback\n\nallow-hotplug eth0\niface eth0 inet dhcp\n' > "$rootfs_dir/etc/network/interfaces"
