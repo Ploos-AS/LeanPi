@@ -29,7 +29,11 @@ echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
 echo "Serial log: $log"
 
 set +e
-qemu_args=(-M "$QEMU_MACHINE" -m 512 -nographic -no-reboot)
+qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
+case "$QEMU_MACHINE" in
+  orangepi-pc) qemu_args+=(-m 1G) ;;
+  *) qemu_args+=(-m 512) ;;
+esac
 # Make CPU selection explicit for generic virt; aarch64 virt has no useful default CPU.
 case "$ARCH:$QEMU_MACHINE" in
   arm64:virt) qemu_args+=(-cpu cortex-a57) ;;
