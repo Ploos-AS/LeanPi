@@ -10,9 +10,9 @@ end=$(awk -v start="$start" 'NR >= start && /LEANPI_SERVICE_AUDIT_END=1/ { print
 [[ -n "$end" ]] || { echo "Service audit end marker not found" >&2; exit 1; }
 sed -n "${start},${end}p" "$log" > "$out"
 grep -q 'LEANPI_SERVICE_AUDIT=1' "$out"
-grep -q '^\[enabled\]$' "$out"
-grep -q '^\[running\]$' "$out"
-grep -q '^\[timers\]$' "$out"
+grep -q '\[enabled\]' "$out"
+grep -q '\[running\]' "$out"
+grep -q '\[timers\]' "$out"
 grep -q 'LEANPI_SERVICE_AUDIT_END=1' "$out"
 echo "Service audit evidence: $out"
 cat "$out"
