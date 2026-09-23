@@ -78,10 +78,10 @@ jobs:
           bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 420
       - name: Extract resource baseline
         if: success()
-        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+        run: bash scripts/extract-resource-baseline.sh "out/orangepi-pc/qemu-serial.log" "out/orangepi-pc/resource-baseline.txt"
       - name: Extract service audit
         if: success()
-        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
+        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/orangepi-pc/service-audit.txt"
       - name: Enforce resource budget
         if: success()
         run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
@@ -269,13 +269,13 @@ jobs:
           bash scripts/qemu-smoke.sh raspi2b out/raspi2b/leanpi-raspi2b.img 240
       - name: Extract resource baseline
         if: success()
-        run: bash scripts/extract-resource-baseline.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/resource-baseline.txt"
+        run: bash scripts/extract-resource-baseline.sh "out/raspi2b/qemu-serial.log" "out/raspi2b/resource-baseline.txt"
       - name: Extract service audit
         if: success()
-        run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
+        run: bash scripts/extract-service-audit.sh "out/raspi2b/qemu-serial.log" "out/raspi2b/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
+        run: bash scripts/check-resource-budget.sh "out/raspi2b/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi2b-armhf" | tee out/raspi2b/PASS
