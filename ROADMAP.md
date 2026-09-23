@@ -145,17 +145,18 @@ Design requirements:
 - `leanpi-benchmark` — lightweight resource and performance measurements.
 - Expand the recipe catalogue while keeping software outside LeanPi Base by default.
 
-## M5 — Additional architectures
+## M5 — Additional ARM platforms
 
-Apply the same lean-base and measurable-qualification principles to:
+Keep LeanPi focused on ARM boards/SBCs rather than becoming a general-purpose minimal distribution.
 
-- **legacy x86 / i386** — experimental low-end lane, with Data Evolution decTOP / AMD Geode as the physical reference target. Debian 13 no longer provides an installable i386 system/kernel and its remaining i386 userland requires SSE2, so Geode qualification starts from Debian 12 Bookworm rather than pretending Trixie is supported.
-- riscv64
-- amd64
+- expand ARMv6/ARMv7/ARM64 board coverage where hardware, Debian and upstream kernels make it practical
+- add more Orange Pi, Raspberry Pi and other ARM SBC families
+- continue QEMU ARM qualification for reproducible CI coverage
+- evaluate RISC-V separately only if it fits the SBC/appliance mission
 
-The legacy-x86 lane is deliberately allowed to use an older Debian base while it remains security-maintained; LeanPi tooling and resource policy should stay common across releases. Promotion beyond experimental requires reproducible image builds, a maintained kernel/userspace path, physical decTOP qualification and documented security lifecycle.
+**Explicit scope boundary:** legacy x86, i386 and Data Evolution decTOP / AMD Geode are not LeanPi targets. DECTop qualification belongs to the separate minimal-OS project/family rather than LeanPi.
 
-ARM64 is no longer deferred to the additional-architecture milestone: it enters early through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
+ARM64 is already an early target through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
 
 ## Long-term policy
 
