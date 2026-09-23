@@ -5,11 +5,11 @@ mkdir -p "$(dirname "$out")"
 {
   echo "LEANPI_SERVICE_AUDIT=1"
   echo "[enabled]"
-  systemctl list-unit-files --type=service --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort
+  timeout 15s systemctl list-unit-files --type=service --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort || true
   echo "[running]"
-  systemctl list-units --type=service --state=running --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort
+  timeout 15s systemctl list-units --type=service --state=running --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort || true
   echo "[timers]"
-  systemctl list-unit-files --type=timer --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort
+  timeout 15s systemctl list-unit-files --type=timer --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | LC_ALL=C sort || true
   echo "LEANPI_SERVICE_AUDIT_END=1"
 } > "$out"
 cat "$out"
