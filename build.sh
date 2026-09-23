@@ -13,7 +13,7 @@ missing=(); for cmd in "${required_cmds[@]}"; do command -v "$cmd" >/dev/null 2>
 printf 'LeanPi M1.2 builder\nBoard: %s\nArchitecture: %s\nSoC family: %s\nBootloader: %s\nDTB: %s\nKernel: %s\nSupport: %s\n' "$BOARD_NAME" "$DEBIAN_ARCH" "$SOC_FAMILY" "$BOOTLOADER" "$DTB" "$KERNEL_FAMILY" "$SUPPORT_TIER"
 ((check_only)) && { echo 'M1.2 preflight: PASS'; exit 0; }
 [[ $EUID -eq 0 ]] || { echo 'LeanPi image build must run as root.' >&2; exit 1; }
-release=${DEBIAN_RELEASE:-trixie}; mirror=${DEBIAN_MIRROR:-https://deb.debian.org/debian}; out_dir="out/${BOARD_ID}"
+release=${DEBIAN_RELEASE:-${BASE_RELEASE:-trixie}}; mirror=${DEBIAN_MIRROR:-https://deb.debian.org/debian}; out_dir="out/${BOARD_ID}"
 rootfs_dir=${rootfs_dir:-"${out_dir}/rootfs"}; image_path=${image_path:-"${out_dir}/leanpi-${BOARD_ID}.img"}; image_size_mb=${IMAGE_SIZE_MB:-768}; mkdir -p "$out_dir"
 if [[ -e $rootfs_dir ]]; then [[ -d $rootfs_dir && -z $(find "$rootfs_dir" -mindepth 1 -maxdepth 1 -print -quit) ]] || { echo "Refusing non-empty path: $rootfs_dir" >&2; exit 1; }; else mkdir -p "$rootfs_dir"; fi
 echo "Bootstrapping Debian $release ($DEBIAN_ARCH)"
