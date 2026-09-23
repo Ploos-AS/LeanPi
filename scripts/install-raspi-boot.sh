@@ -29,7 +29,7 @@ echo "Installing Debian Raspberry Pi qualification kernel: $kernel_package"
 chroot "$rootfs" apt-get update
 DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends "$kernel_package"
 # QEMU Raspberry Pi models need MMC/SDHCI storage available before root discovery.
-printf 'sdhci\nsdhci_pltfm\nsdhci_iproc\nmmc_block\n' >> "$rootfs/etc/initramfs-tools/modules"
+printf 'sdhci\nsdhci_pltfm\nsdhci_iproc\nsdhci_bcm2835\nbcm2835\nmmc_block\n' >> "$rootfs/etc/initramfs-tools/modules"
 chroot "$rootfs" update-initramfs -u -k all
 kernel=$(find "$rootfs/boot" -maxdepth 1 -name "vmlinuz-*" -type f | sort -V | tail -1)
 initrd=$(find "$rootfs/boot" -maxdepth 1 -name "initrd.img-*" -type f | sort -V | tail -1)
