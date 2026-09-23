@@ -149,8 +149,11 @@ Design requirements:
 
 Apply the same lean-base and measurable-qualification principles to:
 
+- **legacy x86 / i386** — experimental low-end lane, with Data Evolution decTOP / AMD Geode as the physical reference target. Debian 13 no longer provides an installable i386 system/kernel and its remaining i386 userland requires SSE2, so Geode qualification starts from Debian 12 Bookworm rather than pretending Trixie is supported.
 - riscv64
 - amd64
+
+The legacy-x86 lane is deliberately allowed to use an older Debian base while it remains security-maintained; LeanPi tooling and resource policy should stay common across releases. Promotion beyond experimental requires reproducible image builds, a maintained kernel/userspace path, physical decTOP qualification and documented security lifecycle.
 
 ARM64 is no longer deferred to the additional-architecture milestone: it enters early through Raspberry Pi 3 and QEMU virt so 32/64-bit support evolves together.
 
