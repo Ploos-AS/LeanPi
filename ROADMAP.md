@@ -141,7 +141,7 @@ Design requirements:
 - `leanpi-backup` — system backup/restore with configurable retention and destinations.
 - `leanpi-drive` — storage, filesystem, swap and network-mount management.
 - `leanpi-update` — controlled LeanPi/system update workflow.
-- `leanpi-firstboot` — reproducible unattended first-boot provisioning.
+- `leanpi-firstboot` — reproducible unattended first-boot provisioning. **Implemented early:** one-shot hook runner, completion marker and systemd integration are already part of the base image; M4 extends this into richer provisioning workflows.
 - `leanpi-benchmark` — lightweight resource and performance measurements.
 - Expand the recipe catalogue while keeping software outside LeanPi Base by default.
 
