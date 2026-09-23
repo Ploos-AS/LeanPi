@@ -14,7 +14,7 @@ LeanPi is a Debian-based operating system for single-board computers with two pr
 - Old and resource-constrained hardware is a primary design target.
 - 256 MiB RAM systems should be practical; lower-memory targets are evaluated where hardware and Debian support allow it.
 - ARMv6/ARMv7 support is treated as first-class where the Debian ecosystem makes it feasible.
-- ARM64, RISC-V and x86-64 are supported without adding unnecessary baseline overhead.
+- ARM is the primary and supported hardware architecture family. ARMv6/ARMv7/ARM64 are qualified according to board availability and upstream support.\n- RISC-V may be evaluated separately, but is not required for the core ARM-board scope.\n- x86/DECTop is explicitly out of scope for LeanPi; legacy x86 support belongs in the separate minimal-OS track.
 - Minimal number of background services and processes.
 - Low idle memory use.
 - Small root filesystem.
