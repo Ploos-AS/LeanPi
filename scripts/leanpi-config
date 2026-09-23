@@ -75,6 +75,9 @@ set_logging() {
     file=$dir/leanpi.conf
     wanted="[Journal]
 Storage=$storage
+RuntimeMaxUse=8M
+RuntimeKeepFree=16M
+Compress=yes
 "
     current=$(cat "$file" 2>/dev/null || true)
     [ "$current" = "$wanted" ] && return 0
