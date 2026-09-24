@@ -74,10 +74,16 @@ case "$QEMU_MACHINE" in
     [[ -n "$root_partuuid" ]] || { echo "Missing Raspberry Pi root PARTUUID" >&2; exit 1; }
     sudo losetup -d "$loopdev"
     trap - EXIT
+    kernel_append="root=PARTUUID=$root_partuuid rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+    if [[ "$board_id" == raspi0 ]]; then
+      # Make the earliest ARMv6 boot stage visible. If QEMU remains silent,
+      # the failure is before Linux has initialized its normal serial console.
+      kernel_append+=" earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
+    fi
     qemu_args+=(
       -kernel "$kernel"
       -dtb "$dtb"
-      -append "root=PARTUUID=$root_partuuid rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      -append "$kernel_append"
       -drive "file=$image,format=raw,if=sd"
     )
     [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
