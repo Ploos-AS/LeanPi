@@ -51,7 +51,8 @@ case "$QEMU_MACHINE" in
     rootfs_dir="out/${board_id}/rootfs"
     kernel=$(find "$rootfs_dir/boot" -maxdepth 1 \( -name 'vmlinuz-*' -o -name 'kernel.img' \) -type f | sort -V | tail -1)
     initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
-    [[ "$board_id" == raspi0 ]] && initrd=""
+    # Pi Zero uses a directly loaded ARMv6 kernel. Keep the initramfs when
+    # available so the root device and early userspace match the other lanes.
     if [[ "$board_id" == raspi0 ]]; then
       dtb=$(find "$rootfs_dir/boot" -maxdepth 1 -type f -name "${DTB}" | head -1)
     else
