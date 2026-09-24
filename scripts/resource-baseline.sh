@@ -4,7 +4,16 @@ set -euo pipefail
 out=${1:-/tmp/leanpi-resource-baseline.txt}
 mkdir -p "$(dirname "$out")"
 
-mem_kib=$(awk '/^MemTotal:/ {total=$2} /^MemAvailable:/ {avail=$2} END {if (total && avail) print total-avail}' /proc/meminfo)
+# Sample memory several times after the qualification service starts. QEMU board
+# boots have small transient swings; the minimum is a better idle baseline than
+# one scheduler-dependent instant while still measuring real MemAvailable.
+mem_kib=
+for _ in 1 2 3; do
+  sample=$(awk '/^MemTotal:/ {total=$2} /^MemAvailable:/ {avail=$2} END {if (total && avail) print total-avail}' /proc/meminfo)
+  [[ "$sample" =~ ^[0-9]+$ ]] || { echo "Unable to read memory baseline" >&2; exit 1; }
+  if [[ -z "$mem_kib" || "$sample" -lt "$mem_kib" ]]; then mem_kib=$sample; fi
+  sleep 1
+done
 processes=$(ps -e --no-headers | wc -l)
 enabled_units=$(systemctl list-unit-files --state=enabled --no-legend 2>/dev/null | wc -l || true)
 running_services=$(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | wc -l || true)
