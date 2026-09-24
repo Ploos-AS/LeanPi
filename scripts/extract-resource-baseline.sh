@@ -20,8 +20,8 @@ grep -q '^process_count=' "$out"
 grep -q '^root_used_bytes=' "$out"
 grep -q '^architecture=' "$out"
 for key in memory_used_kib process_count enabled_units running_services root_used_bytes; do
-  value=$(sed -n "s/^\${key}=//p" "$out")
-  [[ "$value" =~ ^[0-9]+$ ]] || { echo "Invalid numeric resource value: \${key}=\${value}" >&2; exit 1; }
+  value=$(grep -m1 "^$key=" "$out" | cut -d= -f2-)
+  [[ "$value" =~ ^[0-9]+$ ]] || { echo "Invalid numeric resource value: $key=$value" >&2; exit 1; }
 done
 [[ $(wc -l < "$out") -eq 8 ]] || { echo "Incomplete resource baseline" >&2; cat "$out" >&2; exit 1; }
 echo "Resource baseline evidence: $out"
