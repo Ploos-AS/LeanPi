@@ -5,6 +5,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Iterative development pushes can otherwise leave several expensive QEMU
+# builds queued for obsolete commits. Keep only the newest run per ref.
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   shell:
     name: Shell syntax
