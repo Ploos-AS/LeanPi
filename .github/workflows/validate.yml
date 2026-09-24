@@ -191,9 +191,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: armhf
-            board: raspi3b-armhf
-            qemu: qemu-system-aarch64
+          # GitHub-hosted QEMU TCG cannot boot the Pi 3 ARMHF kernel on raspi3b:
+          # the emulated CPU starts in AArch64 and AArch32 EL1 cannot be enabled
+          # without KVM support. ARMHF remains covered by board preflight plus the
+          # virt-armhf and raspi2b runtime qualification lanes.
           - arch: arm64
             board: raspi3b-arm64
             qemu: qemu-system-aarch64
