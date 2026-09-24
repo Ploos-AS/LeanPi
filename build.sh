@@ -85,6 +85,13 @@ Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
 EOF
 ln -sf ../tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
 
+# LeanPi is headless-first. Keep the serial console plus tty1 for local recovery,
+# but do not spend RAM/processes on five additional virtual-console gettys.
+mkdir -p "$rootfs_dir/etc/systemd/system/getty.target.wants"
+for tty in tty2 tty3 tty4 tty5 tty6; do
+  ln -sf /dev/null "$rootfs_dir/etc/systemd/system/getty.target.wants/getty@$tty.service"
+done
+
 # Keep /var/tmp persistent: applications may rely on data surviving reboot.
 # Bound APT's package cache instead of spending scarce RAM on another tmpfs.
 mkdir -p "$rootfs_dir/etc/apt/apt.conf.d"
