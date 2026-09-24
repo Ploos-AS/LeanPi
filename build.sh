@@ -106,7 +106,7 @@ EOF
 
 # Headless small-board defaults: disable background facilities that provide no
 # value in LeanPi Base. Masking is deterministic and users can explicitly unmask.
-for unit in     apt-daily.service apt-daily.timer     apt-daily-upgrade.service apt-daily-upgrade.timer     man-db.service man-db.timer     e2scrub_all.service e2scrub_all.timer
+for unit in     apt-daily.service apt-daily.timer     apt-daily-upgrade.service apt-daily-upgrade.timer     man-db.service man-db.timer     e2scrub_all.service e2scrub_all.timer     dpkg-db-backup.service dpkg-db-backup.timer     fstrim.service fstrim.timer
 do
     ln -sf /dev/null "$rootfs_dir/etc/systemd/system/$unit"
 done
