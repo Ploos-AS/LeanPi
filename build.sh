@@ -137,6 +137,11 @@ find "$rootfs_dir/usr/share/doc" -type f \( -name '*.gz' -o -name changelog.Debi
 # optimization can be evidence-driven rather than deleting hardware support.
 echo "LeanPi rootfs size diagnostics:"
 du -x -B1 -d1 "$rootfs_dir/usr" "$rootfs_dir/lib" "$rootfs_dir/var" 2>/dev/null | sort -nr | head -n 20 || true
+for dir in "$rootfs_dir/usr/share" "$rootfs_dir/var/cache"; do
+  if [[ -d "$dir" ]]; then
+    du -x -B1 -d1 "$dir" 2>/dev/null | sort -nr | head -n 20 || true
+  fi
+done
 if [[ -d "$rootfs_dir/lib/modules" ]]; then
   du -x -B1 -d2 "$rootfs_dir/lib/modules" 2>/dev/null | sort -nr | head -n 20 || true
 fi
