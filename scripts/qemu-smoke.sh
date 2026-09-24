@@ -40,7 +40,6 @@ esac
 case "$ARCH:$QEMU_MACHINE" in
   arm64:virt) qemu_args+=(-cpu cortex-a57) ;;
   armhf:virt) qemu_args+=(-cpu cortex-a15) ;;
-  armhf:raspi3b) qemu_args+=(-cpu cortex-a53,aarch64=off) ;;
 esac
 # Some board models do not expose a QEMU NIC. Generic virt and sunxi do.
 case "$QEMU_MACHINE" in
