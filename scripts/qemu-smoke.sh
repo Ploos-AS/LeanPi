@@ -49,10 +49,18 @@ case "$QEMU_MACHINE" in
   orangepi-pc) qemu_args+=(-drive "file=$image,format=raw,if=sd") ;;
   raspi0|raspi2b|raspi3b)
     rootfs_dir="out/${board_id}/rootfs"
-    kernel=$(find "$rootfs_dir/boot" -maxdepth 1 \( -name 'vmlinuz-*' -o -name 'kernel.img' \) -type f | sort -V | tail -1)
+    if [[ "$board_id" == raspi0 ]]; then
+      # The ARMv6 build installs the QEMU-tested zImage as kernel.img. Do not
+      # let a future Debian vmlinuz sort after it and silently change the lane.
+      kernel="$rootfs_dir/boot/kernel.img"
+      [[ -s "$kernel" ]] || { echo "Missing Pi Zero ARMv6 kernel.img" >&2; exit 1; }
+    else
+      kernel=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'vmlinuz-*' -type f | sort -V | tail -1)
+    fi
     initrd=$(find "$rootfs_dir/boot" -maxdepth 1 -name 'initrd.img-*' -type f | sort -V | tail -1)
-    # Pi Zero uses a directly loaded ARMv6 kernel. Keep the initramfs when
-    # available so the root device and early userspace match the other lanes.
+    echo "QEMU kernel: $kernel"
+    [[ -n "$initrd" ]] && echo "QEMU initrd: $initrd"
+    if command -v file >/dev/null 2>&1; then file "$kernel" || true; fi
     if [[ "$board_id" == raspi0 ]]; then
       dtb=$(find "$rootfs_dir/boot" -maxdepth 1 -type f -name "${DTB}" | head -1)
     else
