@@ -100,8 +100,12 @@ ln -sf ../leanpi-firstboot.service "$rootfs_dir/etc/systemd/system/multi-user.ta
 install -Dm755 scripts/service-audit.sh "$rootfs_dir/usr/local/sbin/leanpi-service-audit"
 install -Dm755 scripts/resource-baseline.sh "$rootfs_dir/usr/local/sbin/leanpi-resource-baseline"
 
-# Keep the shipped image lean. Package indexes and installer/bootstrap caches are
-# build-time state; users can recreate APT indexes with apt update when needed.
+if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
+if [[ $KERNEL_FAMILY == raspberrypi ]]; then bash scripts/install-raspi-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
+
+# Keep the shipped image lean. Run this after board-specific kernel/boot package
+# installation, because those steps refresh APT indexes and download packages.
+# The removed files are reproducible build-time state; apt update recreates them.
 rm -rf "$rootfs_dir/var/lib/apt/lists/"* \
        "$rootfs_dir/var/cache/apt/archives/"*.deb \
        "$rootfs_dir/var/cache/debconf/"*-old \
@@ -109,9 +113,6 @@ rm -rf "$rootfs_dir/var/lib/apt/lists/"* \
        "$rootfs_dir/var/log/apt/"*
 mkdir -p "$rootfs_dir/var/lib/apt/lists/partial" "$rootfs_dir/var/cache/apt/archives/partial"
 find "$rootfs_dir/usr/share/doc" -type f \( -name '*.gz' -o -name changelog.Debian -o -name changelog.Debian.gz \) -delete 2>/dev/null || true
-
-if [[ $KERNEL_FAMILY == virt ]]; then bash scripts/install-virt-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
-if [[ $KERNEL_FAMILY == raspberrypi ]]; then bash scripts/install-raspi-boot.sh "$BOARD_ID" "$rootfs_dir"; fi
 loopdev=; mnt=; cleanup(){ set +e; [[ -n $mnt ]] && mountpoint -q "$mnt" && umount "$mnt"; [[ -n $mnt && -d $mnt ]] && rmdir "$mnt"; [[ -n $loopdev ]] && losetup -d "$loopdev"; }; trap cleanup EXIT
 loopdev=$(losetup --find --show --partscan "$image_path"); mkfs.ext4 -F -L leanpi-root "${loopdev}p1" >/dev/null; mnt=$(mktemp -d); mount "${loopdev}p1" "$mnt"; rsync -aHAX --numeric-ids "$rootfs_dir/" "$mnt/"; sync; umount "$mnt"; rmdir "$mnt"; mnt=; losetup -d "$loopdev"; loopdev=
 echo 'LeanPi M1.2 image assembly: PASS'; echo "Image: $image_path"; du -sh "$rootfs_dir"; sha256sum "$image_path" | tee "${image_path}.sha256"
