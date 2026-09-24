@@ -31,10 +31,21 @@ After=systemd-remount-fs.service
 Before=systemd-udev-trigger.service multi-user.target
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete; if [ -x /usr/local/sbin/leanpi-resource-baseline ]; then /usr/local/sbin/leanpi-resource-baseline /run/leanpi-resource-baseline.txt > /dev/console 2>&1 || true; fi; if [ -x /usr/local/sbin/leanpi-service-audit ]; then /usr/local/sbin/leanpi-service-audit /run/leanpi-service-audit.txt > /dev/console 2>&1 || true; fi'
+ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete'
 EOF
-mkdir -p "$rootfs_dir/etc/systemd/system/sysinit.target.wants"
+cat > "$rootfs_dir/etc/systemd/system/leanpi-qualification-metrics.service" <<'EOF'
+[Unit]
+Description=LeanPi qualification resource metrics
+After=leanpi-boot-complete.service systemd-udev-trigger.service
+Wants=leanpi-boot-complete.service
+Before=multi-user.target
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'if [ -x /usr/local/sbin/leanpi-resource-baseline ]; then /usr/local/sbin/leanpi-resource-baseline /run/leanpi-resource-baseline.txt > /dev/console 2>&1 || true; fi; if [ -x /usr/local/sbin/leanpi-service-audit ]; then /usr/local/sbin/leanpi-service-audit /run/leanpi-service-audit.txt > /dev/console 2>&1 || true; fi'
+EOF
+mkdir -p "$rootfs_dir/etc/systemd/system/sysinit.target.wants" "$rootfs_dir/etc/systemd/system/multi-user.target.wants"
 ln -s ../leanpi-boot-complete.service "$rootfs_dir/etc/systemd/system/sysinit.target.wants/leanpi-boot-complete.service"
+ln -s ../leanpi-qualification-metrics.service "$rootfs_dir/etc/systemd/system/multi-user.target.wants/leanpi-qualification-metrics.service"
 
 # Keep emulated qualification focused on headless/server boot.  The generic
 # armmp kernel otherwise spends minutes probing H3 multimedia devices that are
