@@ -27,8 +27,8 @@ cat > "$rootfs_dir/etc/systemd/system/leanpi-boot-complete.service" <<'EOF'
 [Unit]
 Description=LeanPi qualification boot marker
 DefaultDependencies=no
-After=systemd-remount-fs.service systemd-tmpfiles-setup.service
-Before=multi-user.target
+After=systemd-remount-fs.service
+Before=systemd-udev-trigger.service multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete; if [ -x /usr/local/sbin/leanpi-resource-baseline ]; then /usr/local/sbin/leanpi-resource-baseline /run/leanpi-resource-baseline.txt > /dev/console 2>&1 || true; fi; if [ -x /usr/local/sbin/leanpi-service-audit ]; then /usr/local/sbin/leanpi-service-audit /run/leanpi-service-audit.txt > /dev/console 2>&1 || true; fi'
