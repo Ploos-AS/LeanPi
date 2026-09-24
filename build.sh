@@ -113,6 +113,14 @@ rm -rf "$rootfs_dir/var/lib/apt/lists/"* \
        "$rootfs_dir/var/log/apt/"*
 mkdir -p "$rootfs_dir/var/lib/apt/lists/partial" "$rootfs_dir/var/cache/apt/archives/partial"
 find "$rootfs_dir/usr/share/doc" -type f \( -name '*.gz' -o -name changelog.Debian -o -name changelog.Debian.gz \) -delete 2>/dev/null || true
+# Debian kernel packages install modules for many unrelated ARM boards. Keep
+# module metadata intact for now; report the largest directories so size
+# optimization can be evidence-driven rather than deleting hardware support.
+echo "LeanPi rootfs size diagnostics:"
+du -x -B1 -d1 "$rootfs_dir/usr" "$rootfs_dir/lib" "$rootfs_dir/var" 2>/dev/null | sort -nr | head -n 20 || true
+if [[ -d "$rootfs_dir/lib/modules" ]]; then
+  du -x -B1 -d2 "$rootfs_dir/lib/modules" 2>/dev/null | sort -nr | head -n 20 || true
+fi
 loopdev=; mnt=; cleanup(){ set +e; [[ -n $mnt ]] && mountpoint -q "$mnt" && umount "$mnt"; [[ -n $mnt && -d $mnt ]] && rmdir "$mnt"; [[ -n $loopdev ]] && losetup -d "$loopdev"; }; trap cleanup EXIT
 loopdev=$(losetup --find --show --partscan "$image_path"); mkfs.ext4 -F -L leanpi-root "${loopdev}p1" >/dev/null; mnt=$(mktemp -d); mount "${loopdev}p1" "$mnt"; rsync -aHAX --numeric-ids "$rootfs_dir/" "$mnt/"; sync; umount "$mnt"; rmdir "$mnt"; mnt=; losetup -d "$loopdev"; loopdev=
 echo 'LeanPi M1.2 image assembly: PASS'; echo "Image: $image_path"; du -sh "$rootfs_dir"; sha256sum "$image_path" | tee "${image_path}.sha256"
