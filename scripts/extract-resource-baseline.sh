@@ -8,7 +8,8 @@ out=$2
 start=$(grep -n -m1 'LEANPI_RESOURCE_BASELINE=1' "$log" | cut -d: -f1 || true)
 [[ -n "$start" ]] || { echo "Resource baseline marker not found" >&2; exit 1; }
 
-tail -n +"$start" "$log" | tr -d '\r' | sed -E 
+tail -n +"$start" "$log" | tr -d '\r' | awk '
+  { gsub(/\033\[[0-9;?]*[ -\/]*[@-~]/, "") }
   /LEANPI_RESOURCE_BASELINE=1/ { found=1; print "LEANPI_RESOURCE_BASELINE=1"; next }
   found && /^(memory_used_kib|process_count|enabled_units|running_services|root_used_bytes|kernel|architecture)=/ { print; count++ }
   found && count == 7 { exit }
@@ -19,22 +20,9 @@ grep -q '^process_count=' "$out"
 grep -q '^root_used_bytes=' "$out"
 grep -q '^architecture=' "$out"
 for key in memory_used_kib process_count enabled_units running_services root_used_bytes; do
-  value=$(sed -n "s/^${key}=//p" "$out")
-  [[ "$value" =~ ^[0-9]+$ ]] || { echo "Invalid numeric resource value: ${key}=${value}" >&2; exit 1; }
+  value=$(sed -n "s/^\${key}=//p" "$out")
+  [[ "$value" =~ ^[0-9]+$ ]] || { echo "Invalid numeric resource value: \${key}=\${value}" >&2; exit 1; }
 done
-[[ $(wc -l < "$out") -eq 8 ]] || { echo "Incomplete resource baseline" >&2; cat "$out" >&2; exit 1; }
-echo "Resource baseline evidence: $out"
-cat "$out"
-s/\\x1B\\[[0-9;?]*[ -/]*[@-~]//g' | awk '
-  /LEANPI_RESOURCE_BASELINE=1/ { found=1; print "LEANPI_RESOURCE_BASELINE=1"; next }
-  found && /^(memory_used_kib|process_count|enabled_units|running_services|root_used_bytes|kernel|architecture)=/ { print; count++ }
-  found && count == 7 { exit }
-' > "$out"
-
-grep -q '^memory_used_kib=' "$out"
-grep -q '^process_count=' "$out"
-grep -q '^root_used_bytes=' "$out"
-grep -q '^architecture=' "$out"
 [[ $(wc -l < "$out") -eq 8 ]] || { echo "Incomplete resource baseline" >&2; cat "$out" >&2; exit 1; }
 echo "Resource baseline evidence: $out"
 cat "$out"
