@@ -4,7 +4,18 @@ set -euo pipefail
 file=$1
 [[ -f "$file" ]] || { echo "Baseline not found: $file" >&2; exit 1; }
 
-source "$file"
+while IFS="=" read -r key value; do
+  case "$key" in
+    memory_used_kib|process_count|enabled_units|running_services|root_used_bytes|kernel|architecture)
+      printf -v "$key" '%s' "$value"
+      ;;
+  esac
+done < "$file"
+
+for key in memory_used_kib process_count enabled_units running_services root_used_bytes; do
+  value=${!key:-}
+  [[ "$value" =~ ^[0-9]+$ ]] || { echo "RESOURCE FAIL: invalid ${key}=${value}" >&2; exit 1; }
+done
 max_memory_kib=${LEANPI_MAX_MEMORY_KIB:-40960}
 max_root_bytes=${LEANPI_MAX_ROOT_BYTES:-524288000}
 max_processes=${LEANPI_MAX_PROCESSES:-}
