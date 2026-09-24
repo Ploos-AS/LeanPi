@@ -8,6 +8,10 @@ mkdir -p "$(dirname "$out")"
 # boots have small transient swings; the minimum is a better idle baseline than
 # one scheduler-dependent instant while still measuring real MemAvailable.
 mem_kib=
+# Let boot-time one-shot work and kernel deferred probes settle before measuring
+# the steady idle footprint. This does not change the budget; it only avoids
+# treating short-lived boot allocations as resident LeanPi memory.
+sleep 10
 for _ in 1 2 3; do
   sample=$(awk '/^MemTotal:/ {total=$2} /^MemAvailable:/ {avail=$2} END {if (total && avail) print total-avail}' /proc/meminfo)
   [[ "$sample" =~ ^[0-9]+$ ]] || { echo "Unable to read memory baseline" >&2; exit 1; }
