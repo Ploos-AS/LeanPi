@@ -107,8 +107,9 @@ if [[ $KERNEL_FAMILY == raspberrypi ]]; then bash scripts/install-raspi-boot.sh 
 # installation, because those steps refresh APT indexes and download packages.
 # The removed files are reproducible build-time state; apt update recreates them.
 rm -rf "$rootfs_dir/var/lib/apt/lists/"* \
-       "$rootfs_dir/var/cache/apt/archives/"*.deb \
+       "$rootfs_dir/var/cache/apt/archives/"* \
        "$rootfs_dir/var/cache/debconf/"*-old \
+       "$rootfs_dir/var/cache/man/"* \
        "$rootfs_dir/var/log/"*.log \
        "$rootfs_dir/var/log/apt/"*
 mkdir -p "$rootfs_dir/var/lib/apt/lists/partial" "$rootfs_dir/var/cache/apt/archives/partial"
