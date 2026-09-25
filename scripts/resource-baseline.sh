@@ -23,6 +23,14 @@ enabled_units=$(systemctl list-unit-files --state=enabled --no-legend 2>/dev/nul
 running_services=$(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | wc -l || true)
 root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
 
+# Emit evidence for memory work without changing the resource gate. These
+# snapshots make it possible to distinguish userspace RSS from kernel/slab/cache
+# pressure on board-specific QEMU machines.
+echo "LEANPI_MEMORY_DIAGNOSTICS=1"
+grep -E '^(MemTotal|MemFree|MemAvailable|Buffers|Cached|SReclaimable|SUnreclaim|Slab|KernelStack|PageTables):' /proc/meminfo || true
+ps -e -o pid=,comm=,rss= --sort=-rss 2>/dev/null | head -n 15 || true
+echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
+
 {
   echo "LEANPI_RESOURCE_BASELINE=1"
   echo "memory_used_kib=$mem_kib"
