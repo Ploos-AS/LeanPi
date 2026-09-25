@@ -22,10 +22,12 @@ make -C "$work/linux" bcmrpi_defconfig
 # Debian's initramfs module set.
 "$work/linux/scripts/config" --file "$work/linux/.config" \
   -e MMC -e MMC_BLOCK -e MMC_BCM2835 -e MMC_SDHCI -e MMC_SDHCI_PLTFM -e MMC_SDHCI_IPROC \
-  -e EXT4_FS -e DEVTMPFS -e DEVTMPFS_MOUNT -d MFD_BCM2835_PM
+  -e EXT4_FS -e DEVTMPFS -e DEVTMPFS_MOUNT \
+  -d MFD_BCM2835_PM -d RASPBERRYPI_POWER
 # QEMU raspi0 lacks the BCM2835 firmware power-management MMIO block expected
-# by the current Raspberry Pi kernel. This is an emulator-only kernel quirk;
-# physical Pi Zero qualification must validate the normal hardware driver.
+# by the current Raspberry Pi kernel. Disable both the MFD parent and Raspberry
+# Pi power-domain driver in this emulator qualification kernel. Physical Pi Zero
+# qualification must validate the normal hardware configuration.
 make -C "$work/linux" olddefconfig
 for opt in CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
   grep -q "^${opt}=y$" "$work/linux/.config" || { echo "Required built-in kernel option missing: $opt" >&2; exit 1; }
