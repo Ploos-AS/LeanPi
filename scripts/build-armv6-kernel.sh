@@ -29,6 +29,16 @@ make -C "$work/linux" bcmrpi_defconfig
 # Pi power-domain driver in this emulator qualification kernel. Physical Pi Zero
 # qualification must validate the normal hardware configuration.
 make -C "$work/linux" olddefconfig
+
+# olddefconfig can reselect drivers through Kconfig dependencies. Assert that
+# the raspi0-incompatible power driver is really absent instead of silently
+# producing another kernel that panics in bcm2835_power_probe.
+for opt in CONFIG_MFD_BCM2835_PM CONFIG_RASPBERRYPI_POWER; do
+  if grep -q "^${opt}=y$" "$work/linux/.config"; then
+    echo "QEMU-incompatible kernel option remained enabled: $opt" >&2
+    exit 1
+  fi
+done
 for opt in CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
   grep -q "^${opt}=y$" "$work/linux/.config" || { echo "Required built-in kernel option missing: $opt" >&2; exit 1; }
 done
