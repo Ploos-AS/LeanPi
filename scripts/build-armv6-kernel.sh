@@ -22,7 +22,7 @@ make -C "$work/linux" bcmrpi_defconfig
 # Debian's initramfs module set.
 "$work/linux/scripts/config" --file "$work/linux/.config" \
   -e MMC -e MMC_BLOCK -e MMC_BCM2835 -e MMC_SDHCI -e MMC_SDHCI_PLTFM -e MMC_SDHCI_IPROC \
-  -e PARTITION_ADVANCED -e MSDOS_PARTITION -e BLK_DEV_SD \
+  -e PARTITION_ADVANCED -e MSDOS_PARTITION -e EFI_PARTITION -e BLK_DEV_SD \
   -e EXT4_FS -e DEVTMPFS -e DEVTMPFS_MOUNT \
   -d MFD_BCM2835_PM -d RASPBERRYPI_POWER -d BCM2835_POWER
 # QEMU raspi0 lacks the BCM2835 firmware power-management MMIO block expected
@@ -40,10 +40,10 @@ for opt in CONFIG_MFD_BCM2835_PM CONFIG_RASPBERRYPI_POWER CONFIG_BCM2835_POWER; 
     exit 1
   fi
 done
-for opt in CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_MSDOS_PARTITION CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
+for opt in CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_MSDOS_PARTITION CONFIG_EFI_PARTITION CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
   grep -q "^${opt}=y$" "$work/linux/.config" || { echo "Required built-in kernel option missing: $opt" >&2; exit 1; }
 done
-grep -E '^CONFIG_(PARTITION_ADVANCED|MSDOS_PARTITION|MMC|MMC_BLOCK)=' "$work/linux/.config" || true
+grep -E '^CONFIG_(PARTITION_ADVANCED|MSDOS_PARTITION|EFI_PARTITION|MMC|MMC_BLOCK)=' "$work/linux/.config" || true
 make -C "$work/linux" -j"$jobs" zImage modules dtbs
 
 mkdir -p "$out/boot"
