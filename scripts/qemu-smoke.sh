@@ -76,6 +76,10 @@ case "$QEMU_MACHINE" in
     trap - EXIT
     kernel_append="root=PARTUUID=$root_partuuid rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
     if [[ "$board_id" == raspi0 ]]; then
+      # QEMU raspi0 exposes the SD image as mmcblk0. Use the stable emulated
+      # device name here: the generated MBR PARTUUID is not propagated by this
+      # machine model even though the partition itself is detected correctly.
+      kernel_append="root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       # Make the earliest ARMv6 boot stage visible. If QEMU remains silent,
       # the failure is before Linux has initialized its normal serial console.
       kernel_append+=" earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
