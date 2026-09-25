@@ -23,7 +23,7 @@ make -C "$work/linux" bcmrpi_defconfig
 "$work/linux/scripts/config" --file "$work/linux/.config" \
   -e MMC -e MMC_BLOCK -e MMC_BCM2835 -e MMC_SDHCI -e MMC_SDHCI_PLTFM -e MMC_SDHCI_IPROC \
   -e EXT4_FS -e DEVTMPFS -e DEVTMPFS_MOUNT \
-  -d MFD_BCM2835_PM -d RASPBERRYPI_POWER
+  -d MFD_BCM2835_PM -d RASPBERRYPI_POWER -d BCM2835_POWER
 # QEMU raspi0 lacks the BCM2835 firmware power-management MMIO block expected
 # by the current Raspberry Pi kernel. Disable both the MFD parent and Raspberry
 # Pi power-domain driver in this emulator qualification kernel. Physical Pi Zero
@@ -33,7 +33,7 @@ make -C "$work/linux" olddefconfig
 # olddefconfig can reselect drivers through Kconfig dependencies. Assert that
 # the raspi0-incompatible power driver is really absent instead of silently
 # producing another kernel that panics in bcm2835_power_probe.
-for opt in CONFIG_MFD_BCM2835_PM CONFIG_RASPBERRYPI_POWER; do
+for opt in CONFIG_MFD_BCM2835_PM CONFIG_RASPBERRYPI_POWER CONFIG_BCM2835_POWER; do
   if grep -q "^${opt}=y$" "$work/linux/.config"; then
     echo "QEMU-incompatible kernel option remained enabled: $opt" >&2
     exit 1
