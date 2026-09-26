@@ -57,6 +57,9 @@ if [[ "$board_id" == raspi0 ]]; then
   sudo losetup -d "$qemu_root"
   sudo losetup -d "$loop_probe"
   echo "Pi Zero QEMU-only whole-disk rootfs: $qemu_image"
+  echo "Pi Zero QEMU rootfs host probe:"
+  blkid "$qemu_image" || true
+  dumpe2fs -h "$qemu_image" 2>/dev/null | grep -E "Filesystem magic|Filesystem state|Block size|Filesystem features" || true
 fi
 echo "Serial log: $log"
 
@@ -113,7 +116,7 @@ case "$QEMU_MACHINE" in
       kernel_append="root=/dev/mmcblk0 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       # Make the earliest ARMv6 boot stage visible. If QEMU remains silent,
       # the failure is before Linux has initialized its normal serial console.
-      kernel_append+=" earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
+      kernel_append+=" earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel rootdelay=2"
     fi
     qemu_args+=(
       -kernel "$kernel"
