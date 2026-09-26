@@ -43,11 +43,17 @@ if [[ "$board_id" == raspi0 ]]; then
   # this ARMv6 guest kernel. Build a disposable whole-disk ext4 copy strictly
   # for emulator qualification; the released LeanPi image remains unchanged.
   qemu_image="out/${board_id}/leanpi-raspi0-qemu-root.img"
-  truncate -s 1020M "$qemu_image"
+  truncate -s 1G "$qemu_image"
   mkfs.ext4 -F -L leanpi-qemu-root "$qemu_image" >/dev/null
   loop_probe=$(sudo losetup --find --show --partscan "$image")
   qemu_root=$(sudo losetup --find --show "$qemu_image")
-  sudo dd if="${loop_probe}p1" of="$qemu_root" bs=4M status=none conv=fsync
+  qemu_mnt=$(mktemp -d)
+  sudo mount "${loop_probe}p1" "$qemu_mnt"
+  sudo mount "$qemu_root" "$qemu_mnt.qemu" 2>/dev/null || { sudo mkdir -p "$qemu_mnt.qemu"; sudo mount "$qemu_root" "$qemu_mnt.qemu"; }
+  sudo rsync -aHAX "$qemu_mnt/" "$qemu_mnt.qemu/"
+  sudo umount "$qemu_mnt.qemu"
+  sudo umount "$qemu_mnt"
+  sudo rmdir "$qemu_mnt.qemu" "$qemu_mnt"
   sudo losetup -d "$qemu_root"
   sudo losetup -d "$loop_probe"
   echo "Pi Zero QEMU-only whole-disk rootfs: $qemu_image"
