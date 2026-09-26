@@ -43,7 +43,9 @@ done
 for opt in CONFIG_BLOCK CONFIG_MMC CONFIG_MMC_BLOCK CONFIG_MSDOS_PARTITION CONFIG_EFI_PARTITION CONFIG_EXT4_FS CONFIG_DEVTMPFS CONFIG_DEVTMPFS_MOUNT; do
   grep -q "^${opt}=y$" "$work/linux/.config" || { echo "Required built-in kernel option missing: $opt" >&2; exit 1; }
 done
-grep -E '^CONFIG_(BLOCK|PARTITION_ADVANCED|MSDOS_PARTITION|EFI_PARTITION|MMC|MMC_BLOCK|MMC_BLOCK_MINORS)=' "$work/linux/.config" || true
+grep -E '^CONFIG_(BLOCK|PARTITION_ADVANCED|MSDOS_PARTITION|EFI_PARTITION|MMC|MMC_BLOCK|MMC_BLOCK_MINORS|EXT4_FS|EXT4_USE_FOR_EXT2|JBD2|CRC16)=' "$work/linux/.config" || true
+echo "ARMv6 built-in filesystem support:"
+grep -E '^CONFIG_(EXT4_FS|JBD2|CRC16)=' "$work/linux/.config" || true
 make -C "$work/linux" -j"$jobs" zImage modules dtbs
 
 mkdir -p "$out/boot"
