@@ -124,7 +124,37 @@ case "$QEMU_MACHINE" in
       -append "$kernel_append"
       -drive "file=${qemu_image:-$image},format=raw,if=sd"
     )
-    [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
+    if [[ "$board_id" == raspi0 ]]; then
+      # Diagnostic initramfs: prove that early userspace can open the QEMU SD
+      # block device and read its ext4 superblock before attempting real root.
+      probe_dir=$(mktemp -d)
+      mkdir -p "$probe_dir"/{bin,dev,proc,sys}
+      cp /bin/busybox "$probe_dir/bin/busybox"
+      for app in sh mount sleep dd od; do ln -s busybox "$probe_dir/bin/$app"; done
+      cat > "$probe_dir/init" <<'EOF'
+#!/bin/sh
+mount -t devtmpfs devtmpfs /dev
+mount -t proc proc /proc
+echo LEANPI_RASPI0_INITRAMFS_PROBE
+ls -l /dev/mmcblk0 2>/dev || true
+dd if=/dev/mmcblk0 bs=1024 skip=1 count=2 2>/dev | od -An -tx1
+echo LEANPI_RASPI0_SD_READ_COMPLETE
+sleep 2
+exec sh
+EOF
+      chmod +x "$probe_dir/init"
+      probe_initrd="out/${board_id}/raspi0-probe-initramfs.cpio.gz"
+      (cd "$probe_dir" && find . -print0 | cpio --null -ov --format=newc 2>/dev/null | gzip -9) > "$probe_initrd"
+      rm -rf "$probe_dir"
+      qemu_args+=(-initrd "$probe_initrd")
+      kernel_append="rdinit=/init console=${SERIAL_CONSOLE:-ttyAMA0},115200 earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
+      # Replace the earlier append value now that this lane is probing SD I/O.
+      for ((i=0; i<${#qemu_args[@]}; i++)); do
+        if [[ "${qemu_args[i]}" == "-append" ]]; then qemu_args[i+1]="$kernel_append"; fi
+      done
+    elif [[ -n "$initrd" ]]; then
+      qemu_args+=(-initrd "$initrd")
+    fi
     ;;
   virt)
     rootfs_dir="out/${board_id}/rootfs"
