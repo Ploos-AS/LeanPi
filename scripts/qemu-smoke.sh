@@ -27,6 +27,13 @@ command -v "$qemu" >/dev/null || { echo "Missing $qemu" >&2; exit 1; }
 log="out/${board_id}/qemu-serial.log"
 mkdir -p "$(dirname "$log")"
 echo "QEMU smoke test: $board_id ($QEMU_MACHINE)"
+if [[ "$board_id" == raspi0 ]]; then
+  echo "Pi Zero image partition diagnostics:"
+  sfdisk -d "$image" || true
+  fdisk -l "$image" || true
+  echo "Pi Zero MBR signature and partition entry:"
+  od -An -tx1 -j 446 -N 66 "$image" || true
+fi
 echo "Serial log: $log"
 
 set +e
