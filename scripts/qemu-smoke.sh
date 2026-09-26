@@ -39,6 +39,18 @@ if [[ "$board_id" == raspi0 ]]; then
   loop_probe=$(sudo losetup --find --show --partscan "$image")
   sudo blkid "$loop_probe" "${loop_probe}p1" || true
   sudo losetup -d "$loop_probe"
+  # QEMU raspi0 currently exposes the SD card but not its MBR partition to
+  # this ARMv6 guest kernel. Build a disposable whole-disk ext4 copy strictly
+  # for emulator qualification; the released LeanPi image remains unchanged.
+  qemu_image="out/${board_id}/leanpi-raspi0-qemu-root.img"
+  truncate -s 1020M "$qemu_image"
+  mkfs.ext4 -F -L leanpi-qemu-root "$qemu_image" >/dev/null
+  loop_probe=$(sudo losetup --find --show --partscan "$image")
+  qemu_root=$(sudo losetup --find --show "$qemu_image")
+  sudo dd if="${loop_probe}p1" of="$qemu_root" bs=4M status=none conv=fsync
+  sudo losetup -d "$qemu_root"
+  sudo losetup -d "$loop_probe"
+  echo "Pi Zero QEMU-only whole-disk rootfs: $qemu_image"
 fi
 echo "Serial log: $log"
 
@@ -92,7 +104,7 @@ case "$QEMU_MACHINE" in
       # QEMU raspi0 exposes the SD image as mmcblk0. Use the stable emulated
       # device name here: the generated MBR PARTUUID is not propagated by this
       # machine model even though the partition itself is detected correctly.
-      kernel_append="root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
+      kernel_append="root=/dev/mmcblk0 rootwait rw rootfstype=ext4 console=${SERIAL_CONSOLE:-ttyAMA0},115200"
       # Make the earliest ARMv6 boot stage visible. If QEMU remains silent,
       # the failure is before Linux has initialized its normal serial console.
       kernel_append+=" earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
@@ -101,7 +113,7 @@ case "$QEMU_MACHINE" in
       -kernel "$kernel"
       -dtb "$dtb"
       -append "$kernel_append"
-      -drive "file=$image,format=raw,if=sd"
+      -drive "file=${qemu_image:-$image},format=raw,if=sd"
     )
     [[ -n "$initrd" ]] && qemu_args+=(-initrd "$initrd")
     ;;
