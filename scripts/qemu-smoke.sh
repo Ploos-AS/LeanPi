@@ -33,6 +33,12 @@ if [[ "$board_id" == raspi0 ]]; then
   fdisk -l "$image" || true
   echo "Pi Zero MBR signature and partition entry:"
   od -An -tx1 -j 446 -N 66 "$image" || true
+  echo "Pi Zero partition start-sector signature:"
+  od -An -tx1 -j $((8192 * 512)) -N 64 "$image" || true
+  echo "Pi Zero host-side filesystem probe:"
+  loop_probe=$(sudo losetup --find --show --partscan "$image")
+  sudo blkid "$loop_probe" "${loop_probe}p1" || true
+  sudo losetup -d "$loop_probe"
 fi
 echo "Serial log: $log"
 
