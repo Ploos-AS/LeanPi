@@ -359,8 +359,11 @@ jobs:
           sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
           tmp_deb=$(mktemp -d)
           mmdebstrap --variant=extract --architectures=armel --include=busybox-static trixie "$tmp_deb" http://deb.debian.org/debian
-          sudo install -m 0755 "$tmp_deb/bin/busybox" /bin/busybox
+          busybox_src=$(find "$tmp_deb" -type f -name busybox -perm -111 -print -quit)
+          [[ -n "$busybox_src" ]] || { echo "Debian armel BusyBox not found after extraction" >&2; find "$tmp_deb" -maxdepth 4 -type f | sort; exit 1; }
+          sudo install -m 0755 "$busybox_src" /bin/busybox
           file /bin/busybox
+          file /bin/busybox | grep -Eq 'ARM|arm'
       - name: Download ARMv6 kernel
         uses: actions/download-artifact@v4
         with:
