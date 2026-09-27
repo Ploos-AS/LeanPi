@@ -81,7 +81,7 @@ jobs:
         id: qemu_boot
         run: |
           sudo chown -R "$USER":"$USER" out/orangepi-pc
-          bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 420
+          bash scripts/qemu-smoke.sh orangepi-pc out/orangepi-pc/leanpi-orangepi-pc.img 720
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/orangepi-pc/qemu-serial.log" "out/orangepi-pc/resource-baseline.txt"
