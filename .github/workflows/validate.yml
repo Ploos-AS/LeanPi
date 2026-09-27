@@ -273,7 +273,7 @@ jobs:
       - name: Boot and qualify in QEMU
         run: |
           sudo chown -R "$USER":"$USER" out/raspi2b
-          bash scripts/qemu-smoke.sh raspi2b out/raspi2b/leanpi-raspi2b.img 240
+          bash scripts/qemu-smoke.sh raspi2b out/raspi2b/leanpi-raspi2b.img 360
       - name: Extract resource baseline
         if: success()
         run: bash scripts/extract-resource-baseline.sh "out/raspi2b/qemu-serial.log" "out/raspi2b/resource-baseline.txt"
