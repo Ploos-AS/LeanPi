@@ -31,7 +31,7 @@ After=systemd-remount-fs.service
 Before=systemd-udev-trigger.service multi-user.target
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'echo LEANPI_BOOT_COMPLETE > /dev/console; touch /run/leanpi-boot-complete'
+ExecStart=/bin/sh -c 'touch /run/leanpi-boot-complete; printf "LEANPI_BOOT_COMPLETE\\n" > /dev/${SERIAL_CONSOLE:-console} 2>/dev/null || true'
 EOF
 cat > "$rootfs_dir/etc/systemd/system/leanpi-qualification-metrics.service" <<'EOF'
 [Unit]
