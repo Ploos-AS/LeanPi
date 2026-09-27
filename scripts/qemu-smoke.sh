@@ -129,11 +129,11 @@ case "$QEMU_MACHINE" in
       # block device and read its ext4 superblock before attempting real root.
       probe_dir=$(mktemp -d)
       mkdir -p "$probe_dir"/{bin,dev,proc,sys}
-      busybox_src="$rootfs_dir/bin/busybox"
-      [[ -x "$busybox_src" ]] || busybox_src="$rootfs_dir/usr/bin/busybox"
-      [[ -x "$busybox_src" ]] || { echo "Missing ARM BusyBox in raspi0 rootfs" >&2; exit 1; }
+      busybox_src=/bin/busybox
+      [[ -x "$busybox_src" ]] || { echo "Missing CI ARM BusyBox for raspi0 probe" >&2; exit 1; }
       cp "$busybox_src" "$probe_dir/bin/busybox"
-      file "$probe_dir/bin/busybox" || true
+      file "$probe_dir/bin/busybox"
+      file "$probe_dir/bin/busybox" | grep -Eq 'ARM|arm' || { echo "raspi0 probe BusyBox is not ARM" >&2; exit 1; }
       for app in sh mount sleep dd od; do ln -s busybox "$probe_dir/bin/$app"; done
       cat > "$probe_dir/init" <<'EOF'
 #!/bin/sh
