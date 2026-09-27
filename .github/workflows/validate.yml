@@ -354,7 +354,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
-        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
+        run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring busybox-static:armhf
       - name: Download ARMv6 kernel
         uses: actions/download-artifact@v4
         with:
