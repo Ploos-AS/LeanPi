@@ -145,10 +145,17 @@ while [ ! -b /dev/mmcblk0 ] && [ "$i" -lt 50 ]; do
   /bin/busybox sleep 0.1
   i=$((i + 1))
 done
-/bin/busybox ls -l /dev/mmcblk0 2>/dev || true
-/bin/busybox dd if=/dev/mmcblk0 bs=1024 skip=1 count=2 2>/dev | /bin/busybox od -An -tx1
+/bin/busybox ls -l /dev/mmcblk0 2>/dev/null || true
+/bin/busybox dd if=/dev/mmcblk0 bs=1024 skip=1 count=2 2>/dev/null | /bin/busybox od -An -tx1
 /bin/busybox echo LEANPI_RASPI0_SD_READ_COMPLETE
-/bin/busybox sleep 30
+/bin/busybox mkdir -p /newroot
+if /bin/busybox mount -t ext4 -o ro /dev/mmcblk0 /newroot; then
+  /bin/busybox echo LEANPI_RASPI0_EXT4_MOUNT_PASS
+  /bin/busybox ls -la /newroot | /bin/busybox head
+else
+  /bin/busybox echo LEANPI_RASPI0_EXT4_MOUNT_FAIL
+fi
+/bin/busybox sleep 300
 EOF
       chmod +x "$probe_dir/init"
       probe_initrd="out/${board_id}/raspi0-probe-initramfs.cpio.gz"
