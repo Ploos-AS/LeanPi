@@ -135,23 +135,27 @@ case "$QEMU_MACHINE" in
       file "$probe_dir/bin/busybox"
       file "$probe_dir/bin/busybox" | grep -Eq 'ARM|arm' || { echo "raspi0 probe BusyBox is not ARM" >&2; exit 1; }
       for app in sh mount sleep dd od; do ln -s busybox "$probe_dir/bin/$app"; done
-      cat > "$probe_dir/bin/probe.sh" <<'EOF'
+      cat > "$probe_dir/init" <<'EOF'
 #!/bin/busybox sh
 /bin/busybox mount -t devtmpfs devtmpfs /dev
 /bin/busybox mount -t proc proc /proc
 /bin/busybox echo LEANPI_RASPI0_INITRAMFS_PROBE
+i=0
+while [ ! -b /dev/mmcblk0 ] && [ "$i" -lt 50 ]; do
+  /bin/busybox sleep 0.1
+  i=$((i + 1))
+done
 /bin/busybox ls -l /dev/mmcblk0 2>/dev || true
 /bin/busybox dd if=/dev/mmcblk0 bs=1024 skip=1 count=2 2>/dev | /bin/busybox od -An -tx1
 /bin/busybox echo LEANPI_RASPI0_SD_READ_COMPLETE
 /bin/busybox sleep 30
 EOF
-      chmod +x "$probe_dir/bin/probe.sh"
-      ln -sf bin/busybox "$probe_dir/init"
+      chmod +x "$probe_dir/init"
       probe_initrd="out/${board_id}/raspi0-probe-initramfs.cpio.gz"
       (cd "$probe_dir" && find . -print0 | cpio --null -ov --format=newc 2>/dev/null | gzip -9) > "$probe_initrd"
       rm -rf "$probe_dir"
       qemu_args+=(-initrd "$probe_initrd")
-      kernel_append="rdinit=/init sh /bin/probe.sh console=${SERIAL_CONSOLE:-ttyAMA0},115200 earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
+      kernel_append="rdinit=/init console=${SERIAL_CONSOLE:-ttyAMA0},115200 earlycon=pl011,0x20201000 keep_bootcon ignore_loglevel"
       # Replace the earlier append value now that this lane is probing SD I/O.
       for ((i=0; i<${#qemu_args[@]}; i++)); do
         if [[ "${qemu_args[i]}" == "-append" ]]; then qemu_args[i+1]="$kernel_append"; fi
