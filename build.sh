@@ -87,9 +87,11 @@ ln -sf ../tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mo
 
 # LeanPi is headless-first. Keep the serial console plus tty1 for local recovery,
 # but do not spend RAM/processes on five additional virtual-console gettys.
-mkdir -p "$rootfs_dir/etc/systemd/system/getty.target.wants"
+mkdir -p "$rootfs_dir/etc/systemd/system"
 for tty in tty2 tty3 tty4 tty5 tty6; do
-  ln -sf /dev/null "$rootfs_dir/etc/systemd/system/getty.target.wants/getty@$tty.service"
+  # Mask the instantiated unit itself.  Masking only the wants/ symlink is
+  # overwritten by Debian's getty generator during boot.
+  ln -sf /dev/null "$rootfs_dir/etc/systemd/system/getty@$tty.service"
 done
 
 # Keep /var/tmp persistent: applications may rely on data surviving reboot.
