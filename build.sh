@@ -76,6 +76,9 @@ RuntimeMaxUse=8M
 RuntimeKeepFree=16M
 Compress=yes
 EOF
+# Storage is deliberately volatile, so there is no persistent journal to flush
+# during boot. Mask the flush unit instead of paying for a no-op disk-journal path.
+ln -sf /dev/null "$rootfs_dir/etc/systemd/system/systemd-journal-flush.service"
 
 # Keep temporary writes off flash without allowing tmpfs to consume unbounded RAM.
 mkdir -p "$rootfs_dir/etc/systemd/system/tmp.mount.d" "$rootfs_dir/etc/systemd/system/local-fs.target.wants"
