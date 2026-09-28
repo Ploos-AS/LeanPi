@@ -11,7 +11,15 @@ start=$(grep -n -m1 'LEANPI_RESOURCE_BASELINE=1' "$log" | cut -d: -f1 || true)
 tail -n +"$start" "$log" | tr -d '\r' | awk '
   { gsub(/\033\[[0-9;?]*[ -\/]*[@-~]/, "") }
   /LEANPI_RESOURCE_BASELINE=1/ { found=1; print "LEANPI_RESOURCE_BASELINE=1"; next }
-  found && /^(memory_used_kib|process_count|enabled_units|running_services|root_used_bytes|kernel|architecture)=/ { print; count++ }
+  found {
+    for (i = 1; i <= NF; i++) {
+      if ($i ~ /^(memory_used_kib|process_count|enabled_units|running_services|root_used_bytes|kernel|architecture)=/) {
+        print $i
+        count++
+        break
+      }
+    }
+  }
   found && count == 7 { exit }
 ' > "$out"
 
