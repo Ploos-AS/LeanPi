@@ -29,6 +29,16 @@ root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
 echo "LEANPI_MEMORY_DIAGNOSTICS=1"
 grep -E '^(MemTotal|MemFree|MemAvailable|Buffers|Cached|Active|Inactive|Active\(anon\)|Inactive\(anon\)|Active\(file\)|Inactive\(file\)|AnonPages|Mapped|Shmem|KReclaimable|SReclaimable|SUnreclaim|Slab|KernelStack|PageTables|Percpu|VmallocUsed):' /proc/meminfo || true
 ps -e -o pid=,comm=,rss= --sort=-rss 2>/dev/null | head -n 15 || true
+echo "LEANPI_MODULE_DIAGNOSTICS=1"
+if [[ -r /proc/modules ]]; then
+  cat /proc/modules
+fi
+echo "LEANPI_UDEV_DIAGNOSTICS=1"
+for dir in /usr/lib/udev/rules.d /etc/udev/rules.d; do
+  if [[ -d "$dir" ]]; then
+    find "$dir" -maxdepth 1 -type f -printf '%f\n' 2>/dev/null | sort
+  fi
+done
 echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
 
 {
