@@ -27,7 +27,7 @@ root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
 # snapshots make it possible to distinguish userspace RSS from kernel/slab/cache
 # pressure on board-specific QEMU machines.
 echo "LEANPI_MEMORY_DIAGNOSTICS=1"
-grep -E '^(MemTotal|MemFree|MemAvailable|Buffers|Cached|SReclaimable|SUnreclaim|Slab|KernelStack|PageTables):' /proc/meminfo || true
+grep -E '^(MemTotal|MemFree|MemAvailable|Buffers|Cached|Active|Inactive|Active\(anon\)|Inactive\(anon\)|Active\(file\)|Inactive\(file\)|AnonPages|Mapped|Shmem|KReclaimable|SReclaimable|SUnreclaim|Slab|KernelStack|PageTables|Percpu|VmallocUsed):' /proc/meminfo || true
 ps -e -o pid=,comm=,rss= --sort=-rss 2>/dev/null | head -n 15 || true
 echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
 
