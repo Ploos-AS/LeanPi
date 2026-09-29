@@ -73,9 +73,12 @@ mkdir -p "$rootfs_dir/etc/systemd/journald.conf.d"
 cat > "$rootfs_dir/etc/systemd/journald.conf.d/leanpi.conf" <<'EOF'
 [Journal]
 Storage=volatile
-RuntimeMaxUse=8M
+RuntimeMaxUse=2M
 RuntimeKeepFree=16M
+MaxFileSec=5min
 Compress=yes
+Seal=no
+ForwardToWall=no
 EOF
 # Storage is deliberately volatile, so there is no persistent journal to flush.
 # The journal catalog is also already part of the built image; rebuilding it on
