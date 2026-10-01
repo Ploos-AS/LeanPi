@@ -94,11 +94,12 @@ Options=mode=1777,strictatime,nosuid,nodev,size=32M,nr_inodes=16k
 EOF
 ln -sf ../tmp.mount "$rootfs_dir/etc/systemd/system/local-fs.target.wants/tmp.mount"
 
-# LeanPi is headless-first. Keep the serial console plus tty1 for local recovery,
-# but do not spend RAM/processes on five additional virtual-console gettys.
+# LeanPi Base is headless-first. Keep the serial console for local recovery,
+# but do not spend idle RAM/processes on virtual-console gettys. A tty getty can
+# still be explicitly unmasked by profiles or users that need a local display.
 mkdir -p "$rootfs_dir/etc/systemd/system"
-for tty in tty2 tty3 tty4 tty5 tty6; do
-  # Mask the instantiated unit itself.  Masking only the wants/ symlink is
+for tty in tty1 tty2 tty3 tty4 tty5 tty6; do
+  # Mask the instantiated unit itself. Masking only the wants/ symlink is
   # overwritten by Debian's getty generator during boot.
   ln -sf /dev/null "$rootfs_dir/etc/systemd/system/getty@$tty.service"
 done
