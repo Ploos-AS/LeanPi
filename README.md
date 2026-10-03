@@ -14,7 +14,9 @@ LeanPi is a Debian-based operating system for single-board computers with two pr
 - Old and resource-constrained hardware is a primary design target.
 - 256 MiB RAM systems should be practical; lower-memory targets are evaluated where hardware and Debian support allow it.
 - ARMv6/ARMv7 support is treated as first-class where the Debian ecosystem makes it feasible.
-- ARM is the primary and supported hardware architecture family. ARMv6/ARMv7/ARM64 are qualified according to board availability and upstream support.\n- RISC-V may be evaluated separately, but is not required for the core ARM-board scope.\n- x86/DECTop is explicitly out of scope for LeanPi; legacy x86 support belongs in the separate minimal-OS track.
+- ARM is the primary and supported hardware architecture family. ARMv6/ARMv7/ARM64 are qualified according to board availability and upstream support.
+- RISC-V may be evaluated separately, but is not required for the core ARM-board scope.
+- x86/DECTop is explicitly out of scope for LeanPi; legacy x86 support belongs in the separate minimal-OS track.
 - Minimal number of background services and processes.
 - Low idle memory use.
 - Small root filesystem.
@@ -111,7 +113,7 @@ See [ROADMAP.md](ROADMAP.md).
 
 ## Status
 
-**M0: in progress**
+**M0: complete. M1: QEMU/software qualification green; physical reference-board qualification remains.**
 
 - [x] Project scope and priorities
 - [x] Architecture baseline
@@ -119,8 +121,14 @@ See [ROADMAP.md](ROADMAP.md).
 - [x] Hardware support policy
 - [x] Roadmap
 - [x] Initial builder skeleton
-- [ ] First Orange Pi Zero LTS image
-- [ ] First measured resource baseline
+- [x] Reproducible Debian 13 ARM image builds
+- [x] Measured emulated resource baselines and regression gates
+- [x] Current QEMU qualification matrix: ARMv6 probe, ARMv7/armhf and ARM64
+- [x] QEMU Orange Pi PC proxy qualification
+- [ ] Physical Orange Pi Zero / Zero LTS image qualification
+- [ ] Physical reference-board resource baseline
+
+The physical Orange Pi Zero / Zero LTS target remains **< 40 MiB idle RAM** and **< 500 MiB root filesystem**. QEMU machine-specific memory ceilings are regression guards only and do not replace the physical-board target.
 
 ## License
 
