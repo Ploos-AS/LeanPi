@@ -54,6 +54,9 @@ and generic-kernel reservations can materially change the result.
 QEMU lanes therefore use explicit regression ceilings where needed. These
 ceilings do not redefine or relax the physical reference-platform target:
 
+- `orangepi-pc` QEMU: under 48 MiB (49,152 KiB). This is the emulated
+  Orange Pi PC regression ceiling; it does not replace the under-40-MiB target
+  for physical Orange Pi Zero / Zero LTS qualification.
 - `virt-armhf`: under 40 MiB.
 - `virt-arm64`: under 44 MiB (45,056 KiB), based on the Debian 13 generic
   ARM64 qualification baseline. The measured value remains visible in evidence
