@@ -13,20 +13,26 @@ case "$DEBIAN_ARCH" in
 esac
 echo "Installing generic QEMU virt kernel: $kernel_package"
 chroot "$rootfs" apt-get update
-# Kernel package hooks can regenerate the initramfs more than once. Under
-# qemu-user this is particularly expensive. Defer generation until the VirtIO
-# module list below is complete, then build it exactly once.
-mkdir -p "$rootfs/etc/initramfs-tools"
-printf 'update_initramfs=no\n' > "$rootfs/etc/initramfs-tools/update-initramfs.conf"
+# Defer initramfs generation while the kernel package is configured. This avoids
+# repeated slow generation under qemu-user without pre-creating package-owned
+# conffiles (which would trigger a dpkg conffile prompt).
+mkdir -p "$rootfs/usr/sbin"
+cat > "$rootfs/usr/sbin/update-initramfs" <<'EOF'
+#!/bin/sh
+exit 0
+EOF
+chmod 0755 "$rootfs/usr/sbin/update-initramfs"
 DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends "$kernel_package"
-# QEMU virt exposes the root disk through VirtIO MMIO.  Ensure the drivers
-# needed to discover /dev/vda1 are present in the early userspace on armhf too.
+rm -f "$rootfs/usr/sbin/update-initramfs"
+# QEMU virt exposes the root disk through VirtIO MMIO. Ensure the drivers
+# needed to discover /dev/vda1 are present in early userspace on armhf too.
 mkdir -p "$rootfs/etc/initramfs-tools"
 for module in virtio virtio_ring virtio_mmio virtio_blk; do
   grep -qxF "$module" "$rootfs/etc/initramfs-tools/modules" 2>/dev/null || echo "$module" >> "$rootfs/etc/initramfs-tools/modules"
 done
-printf 'update_initramfs=yes\n' > "$rootfs/etc/initramfs-tools/update-initramfs.conf"
-chroot "$rootfs" update-initramfs -c -k "$(basename "$(find "$rootfs/lib/modules" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)")")"
+kernel_version=$(basename "$(find "$rootfs/lib/modules" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)")
+[[ -n "$kernel_version" ]] || { echo "Installed kernel modules not found" >&2; exit 1; }
+chroot "$rootfs" update-initramfs -c -k "$kernel_version"
 kernel=$(find "$rootfs/boot" -maxdepth 1 -name "vmlinuz-*" -type f | sort -V | tail -1)
 initrd=$(find "$rootfs/boot" -maxdepth 1 -name "initrd.img-*" -type f | sort -V | tail -1)
 [[ -n "$kernel" && -n "$initrd" ]] || { echo "Kernel/initrd not found" >&2; exit 1; }
