@@ -13,23 +13,22 @@ case "$DEBIAN_ARCH" in
 esac
 echo "Installing generic QEMU virt kernel: $kernel_package"
 chroot "$rootfs" apt-get update
-# Defer initramfs generation while the kernel package is configured. This avoids
-# repeated slow generation under qemu-user without pre-creating package-owned
-# conffiles (which would trigger a dpkg conffile prompt).
-mkdir -p "$rootfs/usr/sbin"
-cat > "$rootfs/usr/sbin/update-initramfs" <<'EOF'
-#!/bin/sh
-exit 0
-EOF
-chmod 0755 "$rootfs/usr/sbin/update-initramfs"
+# Install initramfs-tools first so its package-owned configuration exists.
+# Then use its supported switch to defer kernel-triggered regeneration while
+# installing the kernel. Generate exactly one final initramfs after VirtIO
+# modules have been declared.
+DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends initramfs-tools
+sed -i 's/^update_initramfs=.*/update_initramfs=no/' "$rootfs/etc/initramfs-tools/update-initramfs.conf"
+grep -q '^update_initramfs=' "$rootfs/etc/initramfs-tools/update-initramfs.conf" ||
+  echo 'update_initramfs=no' >> "$rootfs/etc/initramfs-tools/update-initramfs.conf"
 DEBIAN_FRONTEND=noninteractive chroot "$rootfs" apt-get install -y --no-install-recommends "$kernel_package"
-rm -f "$rootfs/usr/sbin/update-initramfs"
 # QEMU virt exposes the root disk through VirtIO MMIO. Ensure the drivers
 # needed to discover /dev/vda1 are present in early userspace on armhf too.
 mkdir -p "$rootfs/etc/initramfs-tools"
 for module in virtio virtio_ring virtio_mmio virtio_blk; do
   grep -qxF "$module" "$rootfs/etc/initramfs-tools/modules" 2>/dev/null || echo "$module" >> "$rootfs/etc/initramfs-tools/modules"
 done
+sed -i 's/^update_initramfs=.*/update_initramfs=yes/' "$rootfs/etc/initramfs-tools/update-initramfs.conf"
 kernel_version=$(basename "$(find "$rootfs/lib/modules" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)")
 [[ -n "$kernel_version" ]] || { echo "Installed kernel modules not found" >&2; exit 1; }
 chroot "$rootfs" update-initramfs -c -k "$kernel_version"
