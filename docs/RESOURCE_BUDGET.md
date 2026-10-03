@@ -57,6 +57,12 @@ ceilings do not redefine or relax the physical reference-platform target:
 - `orangepi-pc` QEMU: under 48 MiB (49,152 KiB). This is the emulated
   Orange Pi PC regression ceiling; it does not replace the under-40-MiB target
   for physical Orange Pi Zero / Zero LTS qualification.
+- `raspi2b` QEMU: under 48 MiB (49,152 KiB), based on the QEMU Raspberry Pi 2
+  machine baseline. Physical Raspberry Pi 2 measurements remain separate.
+- `raspi3b-arm64` QEMU: under 128 MiB (131,072 KiB). QEMU's Raspberry Pi 3
+  machine has substantially higher reported memory use than the generic ARM64
+  virt machine; this ceiling is therefore only a regression guard for that
+  emulator model, not a physical-board target.
 - `virt-armhf`: under 40 MiB.
 - `virt-arm64`: under 44 MiB (45,056 KiB), based on the Debian 13 generic
   ARM64 qualification baseline. The measured value remains visible in evidence
