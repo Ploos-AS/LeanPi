@@ -90,7 +90,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/orangepi-pc/qemu-serial.log" "out/orangepi-pc/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: bash scripts/check-resource-budget.sh "out/orangepi-pc/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=49152 bash scripts/check-resource-budget.sh "out/orangepi-pc/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
