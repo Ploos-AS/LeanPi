@@ -162,7 +162,8 @@ jobs:
         if: always()
         shell: bash
         run: |
-          mkdir -p "out/${{ matrix.board }}"
+          sudo mkdir -p "out/${{ matrix.board }}"
+          sudo chown -R "$USER":"$USER" "out/${{ matrix.board }}"
           {
             echo "board=${{ matrix.board }}"
             echo "architecture=${{ matrix.arch }}"
