@@ -287,7 +287,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/raspi2b/qemu-serial.log" "out/raspi2b/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: bash scripts/check-resource-budget.sh "out/raspi2b/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=49152 bash scripts/check-resource-budget.sh "out/raspi2b/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi2b-armhf" | tee out/raspi2b/PASS
