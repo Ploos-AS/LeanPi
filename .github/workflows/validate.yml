@@ -209,6 +209,9 @@ jobs:
           - arch: arm64
             board: raspi3b-arm64
             qemu: qemu-system-aarch64
+            # QEMU raspi3b reports substantially more memory use than virt-arm64.
+            # Regression ceiling only; not a physical Raspberry Pi 3 target.
+            max_memory_kib: 131072
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
@@ -229,7 +232,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=${{ matrix.max_memory_kib }} bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
