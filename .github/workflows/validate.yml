@@ -133,9 +133,13 @@ jobs:
           - arch: armhf
             board: virt-armhf
             qemu: qemu-system-arm
+            max_memory_kib: 40960
           - arch: arm64
             board: virt-arm64
             qemu: qemu-system-aarch64
+            # Generic Debian arm64 reserves materially more RAM than armhf.
+            # This is a QEMU regression ceiling, not the LeanPi reference-board target.
+            max_memory_kib: 45056
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
@@ -154,7 +158,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=${{ matrix.max_memory_kib }} bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_VIRT_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
