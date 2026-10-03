@@ -44,6 +44,24 @@ Once a stable M1 baseline exists, CI or qualification tooling should compare new
 
 Larger hardware does not relax the base budget automatically.
 
+### Emulated qualification ceilings
+
+The under-40-MiB idle-RAM target is a product target for the physical reference
+platform, initially Orange Pi Zero / Zero LTS. Generic QEMU machines are also
+measured with the same `MemTotal - MemAvailable` definition, but architecture
+and generic-kernel reservations can materially change the result.
+
+QEMU lanes therefore use explicit regression ceilings where needed. These
+ceilings do not redefine or relax the physical reference-platform target:
+
+- `virt-armhf`: under 40 MiB.
+- `virt-arm64`: under 44 MiB (45,056 KiB), based on the Debian 13 generic
+  ARM64 qualification baseline. The measured value remains visible in evidence
+  and material increases must be investigated rather than silently absorbed.
+
+A QEMU ceiling is a CI regression guard for that emulated platform, not a
+marketing claim or substitute for physical-board qualification.
+
 ## Trade-offs
 
 LeanPi does not optimise solely for the smallest possible number. Security, maintainability, data integrity and compatibility can justify additional resource use. Such trade-offs should be explicit and measurable.
