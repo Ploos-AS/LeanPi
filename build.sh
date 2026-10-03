@@ -73,7 +73,7 @@ mkdir -p "$rootfs_dir/etc/systemd/journald.conf.d"
 cat > "$rootfs_dir/etc/systemd/journald.conf.d/leanpi.conf" <<'EOF'
 [Journal]
 Storage=volatile
-RuntimeMaxUse=2M
+RuntimeMaxUse=1M
 RuntimeKeepFree=16M
 MaxFileSec=5min
 Compress=yes
