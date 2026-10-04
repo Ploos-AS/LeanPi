@@ -37,7 +37,7 @@ Goal: Produce a reproducible Debian 13 Trixie ARMv7 image for Orange Pi Zero / Z
 - Reduce enabled units and process count.
 - Reduce image/rootfs size.
 - Reduce persistent writes.
-- Establish automated regression reporting.
+- Establish automated regression reporting. **Implemented:** QEMU qualification artifacts are consolidated into a per-run resource report covering RAM, rootfs, process count and service/unit counts.
 
 ## M2 — Multi-architecture hardware and qualification framework
 
