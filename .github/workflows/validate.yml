@@ -118,6 +118,8 @@ jobs:
           path: |
             out/orangepi-pc/qemu-serial.log
             out/orangepi-pc/qualification.txt
+            out/orangepi-pc/resource-baseline.txt
+            out/orangepi-pc/service-audit.txt
             out/orangepi-pc/PASS
             out/orangepi-pc/*.sha256
           if-no-files-found: ignore
@@ -318,6 +320,8 @@ jobs:
           path: |
             out/raspi2b/qemu-serial.log
             out/raspi2b/qualification.txt
+            out/raspi2b/resource-baseline.txt
+            out/raspi2b/service-audit.txt
             out/raspi2b/PASS
             out/raspi2b/*.sha256
           if-no-files-found: ignore
