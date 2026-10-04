@@ -146,7 +146,7 @@ mkdir -p "$rootfs_dir/var/lib/apt/lists/partial" "$rootfs_dir/var/cache/apt/arch
 # LeanPi Base is an appliance image, not an offline documentation host. Keep
 # copyright/license metadata, but remove package changelogs, man pages, info
 # pages and unused locale catalogs. Debian packages can restore them on demand.
-find "$rootfs_dir/usr/share/doc" -type f \\( -name '*.gz' -o -name changelog -o -name changelog.Debian -o -name changelog.Debian.gz \\) -delete 2>/dev/null || true
+find "$rootfs_dir/usr/share/doc" -type f \( -name '*.gz' -o -name changelog -o -name changelog.Debian -o -name changelog.Debian.gz \) -delete 2>/dev/null || true
 rm -rf "$rootfs_dir/usr/share/man/"* "$rootfs_dir/usr/share/info/"* "$rootfs_dir/usr/share/locale/"*
 mkdir -p "$rootfs_dir/usr/share/man" "$rootfs_dir/usr/share/info" "$rootfs_dir/usr/share/locale"
 # Debian kernel packages install modules for many unrelated ARM boards. Keep
