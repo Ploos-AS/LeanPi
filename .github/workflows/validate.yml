@@ -27,6 +27,7 @@ jobs:
           bash -n scripts/extract-service-audit.sh
           bash -n scripts/check-resource-budget.sh
           bash -n scripts/qemu-smoke.sh
+          bash -n scripts/hardware-qualification.sh
 
   board-preflight:
     name: Board preflight
