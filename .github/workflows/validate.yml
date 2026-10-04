@@ -428,3 +428,42 @@ jobs:
             out/raspi0/PASS
             out/raspi0/*.sha256
           if-no-files-found: ignore
+
+
+  resource-report:
+    name: Resource regression report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [qemu-orangepi-pc, qemu-virt, qemu-raspi3b, qemu-raspi2b]
+    steps:
+      - name: Download qualification evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-qemu-qualification'
+          path: evidence
+          merge-multiple: false
+      - name: Write resource summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## LeanPi resource regression report"
+            echo
+            echo "| Board | RAM used KiB | Root used bytes | Processes | Enabled units | Running services |"
+            echo "|---|---:|---:|---:|---:|---:|"
+            found=0
+            while IFS= read -r file; do
+              found=1
+              dir=$(dirname "$file")
+              qualification="$dir/qualification.txt"
+              board=$(sed -n 's/^board=//p' "$qualification" 2>/dev/null | head -n1)
+              [[ -n "$board" ]] || board=$(basename "$dir" -qemu-qualification)
+              value() { sed -n "s/^$1=//p" "$file" | head -n1; }
+              printf '| %s | %s | %s | %s | %s | %s |\n' \
+                "$board" "$(value memory_used_kib)" "$(value root_used_bytes)" \
+                "$(value process_count)" "$(value enabled_units)" "$(value running_services)"
+            done < <(find evidence -name resource-baseline.txt -type f | sort)
+            [[ "$found" -eq 1 ]] || echo "| _No resource baselines found_ | | | | | |"
+            echo
+            echo "QEMU figures are regression baselines. They do not replace physical-board qualification or its resource targets."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
