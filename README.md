@@ -73,7 +73,7 @@ Initial targets for the Orange Pi Zero LTS reference platform:
 - measurable boot process count
 - measurable persistent storage writes over time
 
-See [docs/RESOURCE_BUDGET.md](docs/RESOURCE_BUDGET.md).
+See [docs/RESOURCE_BUDGET.md](docs/RESOURCE_BUDGET.md). Physical board acceptance is defined in [docs/PHYSICAL_QUALIFICATION.md](docs/PHYSICAL_QUALIFICATION.md).
 
 ## Architecture
 
