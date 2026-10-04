@@ -404,7 +404,10 @@ jobs:
           {
             echo "board=raspi0"
             echo "architecture=armel-armv6"
-            echo "qemu_machine=raspi0"\n            echo "qualification_scope=armv6-kernel-and-early-userspace-probe"\n            echo "full_board_qualified=false"\n            echo "full_board_requirement=physical-or-self-hosted-pi-zero"
+            echo "qemu_machine=raspi0"
+            echo "qualification_scope=armv6-kernel-and-early-userspace-probe"
+            echo "full_board_qualified=false"
+            echo "full_board_requirement=physical-or-self-hosted-pi-zero"
             echo "commit=$GITHUB_SHA"
             echo "run_id=$GITHUB_RUN_ID"
             qemu-system-arm --version | head -n 1 | sed 's/^/qemu_version=/'
