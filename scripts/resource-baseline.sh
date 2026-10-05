@@ -19,8 +19,14 @@ for _ in 1 2 3; do
   sleep 1
 done
 processes=$(ps -e --no-headers | wc -l)
-enabled_units=$(systemctl list-unit-files --state=enabled --no-legend 2>/dev/null | wc -l || true)
-running_services=$(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | wc -l || true)
+enabled_units=unknown
+if output=$(timeout 30s systemctl list-unit-files --state=enabled --no-legend 2>/dev/null); then
+  enabled_units=$(printf '%s\n' "$output" | awk 'NF {count++} END {print count+0}')
+fi
+running_services=unknown
+if output=$(timeout 30s systemctl list-units --type=service --state=running --no-legend 2>/dev/null); then
+  running_services=$(printf '%s\n' "$output" | awk 'NF {count++} END {print count+0}')
+fi
 root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
 # Record writes completed by the block device backing /. This is cumulative
 # since boot and is intentionally evidence-only for now: QEMU/device models can
