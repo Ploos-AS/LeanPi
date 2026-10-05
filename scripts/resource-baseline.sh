@@ -22,6 +22,18 @@ processes=$(ps -e --no-headers | wc -l)
 enabled_units=$(systemctl list-unit-files --state=enabled --no-legend 2>/dev/null | wc -l || true)
 running_services=$(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | wc -l || true)
 root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
+# Record writes completed by the block device backing /. This is cumulative
+# since boot and is intentionally evidence-only for now: QEMU/device models can
+# differ, so M1.1 first establishes stable per-machine baselines before gating.
+root_source=$(findmnt -n -o SOURCE / 2>/dev/null || true)
+root_device=$(basename "$root_source")
+root_device=${root_device%%[0-9]*}
+root_device=${root_device%p}
+sectors_written=
+if [[ -n "$root_device" && -r /proc/diskstats ]]; then
+  sectors_written=$(awk -v dev="$root_device" '$3 == dev {print $10; exit}' /proc/diskstats)
+fi
+[[ "$sectors_written" =~ ^[0-9]+$ ]] || sectors_written=unknown
 
 # Emit evidence for memory work without changing the resource gate. These
 # snapshots make it possible to distinguish userspace RSS from kernel/slab/cache
@@ -50,6 +62,7 @@ echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
   echo "enabled_units=$enabled_units"
   echo "running_services=$running_services"
   echo "root_used_bytes=$root_bytes"
+  echo "root_sectors_written_since_boot=$sectors_written"
   echo "kernel=$(uname -r)"
   echo "architecture=$(uname -m)"
 } | tee "$out"
