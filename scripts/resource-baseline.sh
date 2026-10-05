@@ -19,10 +19,11 @@ for _ in 1 2 3; do
   sleep 1
 done
 processes=$(ps -e --no-headers | wc -l)
-enabled_units=unknown
-if output=$(timeout 30s systemctl list-unit-files --state=enabled --no-legend 2>/dev/null); then
-  enabled_units=$(printf '%s\n' "$output" | awk 'NF {count++} END {print count+0}')
-fi
+# Count persistent system-level enablement links directly. This avoids the
+# expensive unit-file discovery performed by systemctl on slow emulated boards
+# while measuring the configuration LeanPi actually controls.
+enabled_units=$(find /etc/systemd/system -type l \( -path '*.wants/*' -o -path '*.requires/*' \) -print 2>/dev/null | wc -l)
+
 running_services=unknown
 if output=$(timeout 30s systemctl list-units --type=service --state=running --no-legend 2>/dev/null); then
   running_services=$(printf '%s\n' "$output" | awk 'NF {count++} END {print count+0}')
