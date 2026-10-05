@@ -26,9 +26,16 @@ root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
 # since boot and is intentionally evidence-only for now: QEMU/device models can
 # differ, so M1.1 first establishes stable per-machine baselines before gating.
 root_source=$(findmnt -n -o SOURCE / 2>/dev/null || true)
-root_device=$(basename "$root_source")
-root_device=${root_device%%[0-9]*}
-root_device=${root_device%p}
+root_partition=$(basename "$root_source")
+root_device=
+if [[ -n "$root_partition" && -e "/sys/class/block/$root_partition" ]]; then
+  sys_block=$(readlink -f "/sys/class/block/$root_partition")
+  if [[ -f "/sys/class/block/$root_partition/partition" ]]; then
+    root_device=$(basename "$(dirname "$sys_block")")
+  else
+    root_device=$root_partition
+  fi
+fi
 sectors_written=
 if [[ -n "$root_device" && -r /proc/diskstats ]]; then
   sectors_written=$(awk -v dev="$root_device" '$3 == dev {print $10; exit}' /proc/diskstats)
