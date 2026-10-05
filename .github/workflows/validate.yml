@@ -446,6 +446,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          report=resource-regression.md
+          table=resource-regression.tsv
+          printf 'board\tmemory_used_kib\troot_used_bytes\tprocess_count\tenabled_units\trunning_services\n' > "$table"
           {
             echo "## LeanPi resource regression report"
             echo
@@ -459,11 +462,24 @@ jobs:
               board=$(sed -n 's/^board=//p' "$qualification" 2>/dev/null | head -n1)
               [[ -n "$board" ]] || board=$(basename "$dir" -qemu-qualification)
               value() { sed -n "s/^$1=//p" "$file" | head -n1; }
-              printf '| %s | %s | %s | %s | %s | %s |\n' \
-                "$board" "$(value memory_used_kib)" "$(value root_used_bytes)" \
-                "$(value process_count)" "$(value enabled_units)" "$(value running_services)"
+              memory=$(value memory_used_kib)
+              root=$(value root_used_bytes)
+              processes=$(value process_count)
+              units=$(value enabled_units)
+              services=$(value running_services)
+              printf '| %s | %s | %s | %s | %s | %s |\n' "$board" "$memory" "$root" "$processes" "$units" "$services"
+              printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$board" "$memory" "$root" "$processes" "$units" "$services" >> "$table"
             done < <(find evidence -name resource-baseline.txt -type f | sort)
             [[ "$found" -eq 1 ]] || echo "| _No resource baselines found_ | | | | | |"
             echo
             echo "QEMU figures are regression baselines. They do not replace physical-board qualification or its resource targets."
-          } | tee -a "$GITHUB_STEP_SUMMARY"
+          } | tee "$report" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload resource regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resource-regression-report
+          path: |
+            resource-regression.md
+            resource-regression.tsv
+          if-no-files-found: error
