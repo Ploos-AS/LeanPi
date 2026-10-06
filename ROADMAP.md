@@ -34,10 +34,10 @@ Goal: Produce a reproducible Debian 13 Trixie ARMv7 image for Orange Pi Zero / Z
 ## M1.1 — Base optimisation
 
 - Reduce idle RAM.
-- Reduce enabled units and process count.
+- Reduce enabled units and process count. **Service regression gates implemented:** base image permits at most 14 enabled systemd units and 4 running services; process count remains measured per machine.
 - Reduce image/rootfs size.
 - Reduce persistent writes.
-- Establish automated regression reporting. **Implemented:** QEMU qualification artifacts are consolidated into a per-run resource report covering RAM, rootfs, process count and service/unit counts.
+- Establish automated regression reporting. **Implemented:** QEMU qualification artifacts are consolidated into a per-run resource report covering RAM, rootfs, boot-time root-device writes, process count and service/unit counts.
 
 ## M2 — Multi-architecture hardware and qualification framework
 
