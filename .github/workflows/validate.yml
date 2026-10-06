@@ -91,7 +91,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/orangepi-pc/qemu-serial.log" "out/orangepi-pc/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: LEANPI_MAX_MEMORY_KIB=49152 bash scripts/check-resource-budget.sh "out/orangepi-pc/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=49152 LEANPI_MAX_ROOT_BYTES=335544320 bash scripts/check-resource-budget.sh "out/orangepi-pc/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=orangepi-pc-armhf" | tee out/orangepi-pc/PASS
@@ -137,12 +137,14 @@ jobs:
             board: virt-armhf
             qemu: qemu-system-arm
             max_memory_kib: 40960
+            max_root_bytes: 335544320
           - arch: arm64
             board: virt-arm64
             qemu: qemu-system-aarch64
             # Generic Debian arm64 reserves materially more RAM than armhf.
             # This is a QEMU regression ceiling, not the LeanPi reference-board target.
             max_memory_kib: 45056
+            max_root_bytes: 461373440
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
@@ -161,7 +163,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/${{ matrix.board }}/qemu-serial.log" "out/${{ matrix.board }}/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: LEANPI_MAX_MEMORY_KIB=${{ matrix.max_memory_kib }} bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=${{ matrix.max_memory_kib }} LEANPI_MAX_ROOT_BYTES=${{ matrix.max_root_bytes }} bash scripts/check-resource-budget.sh "out/${{ matrix.board }}/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_VIRT_PASS=${{ matrix.board }}" | tee "out/${{ matrix.board }}/PASS"
@@ -215,6 +217,7 @@ jobs:
             # QEMU raspi3b reports substantially more memory use than virt-arm64.
             # Regression ceiling only; not a physical Raspberry Pi 3 target.
             max_memory_kib: 131072
+            max_root_bytes: 461373440
     steps:
       - uses: actions/checkout@v4
       - name: Install builder and emulator dependencies
@@ -293,7 +296,7 @@ jobs:
         run: bash scripts/extract-service-audit.sh "out/raspi2b/qemu-serial.log" "out/raspi2b/service-audit.txt"
       - name: Enforce resource budget
         if: success()
-        run: LEANPI_MAX_MEMORY_KIB=49152 bash scripts/check-resource-budget.sh "out/raspi2b/resource-baseline.txt"
+        run: LEANPI_MAX_MEMORY_KIB=49152 LEANPI_MAX_ROOT_BYTES=335544320 bash scripts/check-resource-budget.sh "out/raspi2b/resource-baseline.txt"
       - name: Record qualification PASS
         if: success()
         run: echo "QEMU_BOARD_PASS=raspi2b-armhf" | tee out/raspi2b/PASS
