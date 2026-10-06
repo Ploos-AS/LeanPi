@@ -55,6 +55,20 @@ if [[ -n "$root_device" && -r /proc/diskstats ]]; then
 fi
 [[ "$sectors_written" =~ ^[0-9]+$ ]] || sectors_written=unknown
 
+# Measure persistent writes during a fixed, already-settled idle window. Unlike
+# the cumulative boot counter this delta is comparable across QEMU machines and
+# is the metric M1.1 can eventually gate once enough history exists.
+idle_write_window_seconds=${LEANPI_IDLE_WRITE_WINDOW_SECONDS:-30}
+idle_sectors_written=unknown
+if [[ "$sectors_written" =~ ^[0-9]+$ && "$idle_write_window_seconds" =~ ^[0-9]+$ ]]; then
+  idle_write_start=$sectors_written
+  sleep "$idle_write_window_seconds"
+  idle_write_end=$(awk -v dev="$root_device" '$3 == dev {print $10; exit}' /proc/diskstats)
+  if [[ "$idle_write_end" =~ ^[0-9]+$ && "$idle_write_end" -ge "$idle_write_start" ]]; then
+    idle_sectors_written=$((idle_write_end - idle_write_start))
+  fi
+fi
+
 # Emit evidence for memory work without changing the resource gate. These
 # snapshots make it possible to distinguish userspace RSS from kernel/slab/cache
 # pressure on board-specific QEMU machines.
@@ -83,6 +97,8 @@ echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
   echo "running_services=$running_services"
   echo "root_used_bytes=$root_bytes"
   echo "root_sectors_written_since_boot=$sectors_written"
+  echo "idle_write_window_seconds=$idle_write_window_seconds"
+  echo "root_idle_sectors_written=$idle_sectors_written"
   echo "kernel=$(uname -r)"
   echo "architecture=$(uname -m)"
 } | tee "$out"
