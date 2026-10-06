@@ -19,7 +19,8 @@ done
 max_memory_kib=${LEANPI_MAX_MEMORY_KIB:-40960}
 max_root_bytes=${LEANPI_MAX_ROOT_BYTES:-524288000}
 max_processes=${LEANPI_MAX_PROCESSES:-}
-max_running_services=${LEANPI_MAX_RUNNING_SERVICES:-}
+max_enabled_units=${LEANPI_MAX_ENABLED_UNITS:-14}
+max_running_services=${LEANPI_MAX_RUNNING_SERVICES:-4}
 
 fail=0
 if (( memory_used_kib >= max_memory_kib )); then
@@ -33,6 +34,13 @@ if (( root_used_bytes >= max_root_bytes )); then
   fail=1
 else
   echo "RESOURCE PASS: root_used_bytes=$root_used_bytes limit<$max_root_bytes"
+fi
+
+if (( enabled_units > max_enabled_units )); then
+  echo "RESOURCE FAIL: enabled_units=$enabled_units limit<=$max_enabled_units" >&2
+  fail=1
+else
+  echo "RESOURCE PASS: enabled_units=$enabled_units limit<=$max_enabled_units"
 fi
 
 if [[ -n "$max_processes" ]]; then
