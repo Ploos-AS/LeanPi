@@ -14,6 +14,7 @@ These are first engineering targets, not guaranteed marketing claims.
 - Stretch target: under 32 MiB idle RAM.
 - Root filesystem: under 500 MiB initially.
 - Minimal enabled system services.
+- Base-image regression gates: at most 14 enabled systemd units and at most 4 running services.
 - Minimal idle process count.
 - Persistent storage writes must be measurable and should be minimised.
 - No unnecessary polling daemons.
@@ -70,6 +71,12 @@ ceilings do not redefine or relax the physical reference-platform target:
 
 A QEMU ceiling is a CI regression guard for that emulated platform, not a
 marketing claim or substitute for physical-board qualification.
+
+The M1.1 base image also gates systemd configuration at no more than 14
+persistent enabled units and 4 running services. These limits match the green
+cross-machine QEMU baseline and are intended to catch accidental background
+service growth. Process count remains evidence-only because it varies
+materially with the emulated board and kernel.
 
 ## Trade-offs
 
