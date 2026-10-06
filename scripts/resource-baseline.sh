@@ -8,9 +8,15 @@ mkdir -p "$(dirname "$out")"
 # boots have small transient swings; the minimum is a better idle baseline than
 # one scheduler-dependent instant while still measuring real MemAvailable.
 mem_kib=
-# Let boot-time one-shot work and kernel deferred probes settle before measuring
-# the steady idle footprint. This does not change the budget; it only avoids
-# treating short-lived boot allocations as resident LeanPi memory.
+# Wait for device coldplug to reach a steady state before sampling idle RAM.
+# Slow board emulation can otherwise catch transient udev workers and page-table
+# pressure. Keep this bounded so broken hardware discovery cannot hang CI.
+if command -v udevadm >/dev/null 2>&1; then
+  timeout 60s udevadm settle || echo "WARNING: udev settle timed out; continuing with bounded idle sampling" >&2
+fi
+# Let remaining boot-time one-shot work and kernel deferred probes settle. This
+# does not change the budget; it avoids counting transient boot allocations as
+# resident LeanPi memory.
 sleep 10
 for _ in 1 2 3; do
   sample=$(awk '/^MemTotal:/ {total=$2} /^MemAvailable:/ {avail=$2} END {if (total && avail) print total-avail}' /proc/meminfo)
