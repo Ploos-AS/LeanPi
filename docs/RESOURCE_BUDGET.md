@@ -69,6 +69,12 @@ ceilings do not redefine or relax the physical reference-platform target:
   ARM64 qualification baseline. The measured value remains visible in evidence
   and material increases must be investigated rather than silently absorbed.
 
+In addition to the RAM ceilings above, M1.1 uses conservative root-filesystem
+regression ceilings for QEMU images: under 320 MiB (335,544,320 bytes) for
+ARMHF lanes and under 440 MiB (461,373,440 bytes) for ARM64 lanes. These are
+CI bloat guards with headroom above the measured baselines; they do not replace
+the under-500-MiB physical reference-platform target.
+
 A QEMU ceiling is a CI regression guard for that emulated platform, not a
 marketing claim or substitute for physical-board qualification.
 
