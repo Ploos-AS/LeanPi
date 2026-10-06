@@ -35,7 +35,7 @@ Goal: Produce a reproducible Debian 13 Trixie ARMv7 image for Orange Pi Zero / Z
 
 - Reduce idle RAM.
 - Reduce enabled units and process count. **Service regression gates implemented:** base image permits at most 14 enabled systemd units and 4 running services; process count remains measured per machine.
-- Reduce image/rootfs size.
+- Reduce image/rootfs size. **QEMU regression gates implemented and validated:** ARMHF lanes must remain below 320 MiB and ARM64 lanes below 440 MiB. These are CI bloat guards; the physical reference-board product target remains below 500 MiB.
 - Reduce persistent writes.
 - Establish automated regression reporting. **Implemented:** QEMU qualification artifacts are consolidated into a per-run resource report covering RAM, rootfs, boot-time root-device writes, process count and service/unit counts.
 
