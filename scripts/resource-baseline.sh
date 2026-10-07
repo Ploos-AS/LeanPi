@@ -31,7 +31,7 @@ processes=$(ps -e --no-headers | wc -l)
 enabled_units=$(find /etc/systemd/system -type l \( -path '*.wants/*' -o -path '*.requires/*' \) -print 2>/dev/null | wc -l)
 
 running_services=unknown
-if output=$(timeout 30s systemctl list-units --type=service --state=running --no-legend 2>/dev/null); then
+if output=$(timeout 60s systemctl list-units --type=service --state=running --no-legend 2>/dev/null); then
   running_services=$(printf '%s\n' "$output" | awk 'NF {count++} END {print count+0}')
 fi
 root_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')
