@@ -451,12 +451,12 @@ jobs:
           set -euo pipefail
           report=resource-regression.md
           table=resource-regression.tsv
-          printf 'board\tmemory_used_kib\troot_used_bytes\troot_sectors_written_since_boot\tprocess_count\tenabled_units\trunning_services\n' > "$table"
+          printf 'board\tmemory_used_kib\troot_used_bytes\troot_sectors_written_since_boot\tidle_write_window_seconds\troot_idle_sectors_written\tprocess_count\tenabled_units\trunning_services\n' > "$table"
           {
             echo "## LeanPi resource regression report"
             echo
-            echo "| Board | RAM used KiB | Root used bytes | Root sectors written since boot | Processes | Enabled units | Running services |"
-            echo "|---|---:|---:|---:|---:|---:|---:|"
+            echo "| Board | RAM used KiB | Root used bytes | Root sectors written since boot | Idle window s | Root idle sectors written | Processes | Enabled units | Running services |"
+            echo "|---|---:|---:|---:|---:|---:|---:|---:|---:|"
             found=0
             while IFS= read -r file; do
               found=1
@@ -467,13 +467,13 @@ jobs:
               value() { sed -n "s/^$1=//p" "$file" | head -n1; }
               memory=$(value memory_used_kib)
               root=$(value root_used_bytes)
-              writes=$(value root_sectors_written_since_boot)\n              processes=$(value process_count)
+              writes=$(value root_sectors_written_since_boot)\n              idle_window=$(value idle_write_window_seconds)\n              idle_writes=$(value root_idle_sectors_written)\n              processes=$(value process_count)
               units=$(value enabled_units)
               services=$(value running_services)
               printf '| %s | %s | %s | %s | %s | %s | %s |\n' "$board" "$memory" "$root" "$writes" "$processes" "$units" "$services"
               printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$board" "$memory" "$root" "$writes" "$processes" "$units" "$services" >> "$table"
             done < <(find evidence -name resource-baseline.txt -type f | sort)
-            [[ "$found" -eq 1 ]] || echo "| _No resource baselines found_ | | | | | | |"
+            [[ "$found" -eq 1 ]] || echo "| _No resource baselines found_ | | | | | | | | |"
             echo
             echo "QEMU figures are regression baselines. They do not replace physical-board qualification or its resource targets."
           } | tee "$report" >> "$GITHUB_STEP_SUMMARY"
