@@ -12,7 +12,14 @@ mem_kib=
 # Slow board emulation can otherwise catch transient udev workers and page-table
 # pressure. Keep this bounded so broken hardware discovery cannot hang CI.
 if command -v udevadm >/dev/null 2>&1; then
-  timeout 60s udevadm settle || echo "WARNING: udev settle timed out; continuing with bounded idle sampling" >&2
+  if ! timeout 60s udevadm settle; then
+    echo "ERROR: udev did not settle within 60s; idle resource qualification is invalid" >&2
+    echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
+    udevadm info --export-db 2>/dev/null | tail -n 30 >&2 || true
+    ps -e -o pid=,ppid=,stat=,comm= --sort=pid | grep -E "udev|PID" >&2 || true
+    systemctl --no-pager --plain status systemd-udev-trigger.service systemd-udevd.service 2>&1 | tail -n 45 >&2 || true
+    exit 1
+  fi
 fi
 # Let remaining boot-time one-shot work and kernel deferred probes settle. This
 # does not change the budget; it avoids counting transient boot allocations as
