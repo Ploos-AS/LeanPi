@@ -15,9 +15,14 @@ if command -v udevadm >/dev/null 2>&1; then
   if ! timeout 60s udevadm settle; then
     echo "ERROR: udev did not settle within 60s; idle resource qualification is invalid" >&2
     echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
-    udevadm info --export-db 2>/dev/null | tail -n 30 >&2 || true
+    echo "Udev queue status:" >&2
+    udevadm settle --timeout=1 2>&1 >&2 || true
+    echo "Pending udev event files:" >&2
+    find /run/udev/queue /run/udev/data -maxdepth 1 -type f 2>/dev/null | head -n 40 >&2 || true
+    echo "Udev database tail:" >&2
+    timeout 10s udevadm info --export-db 2>/dev/null | tail -n 30 >&2 || true
     ps -e -o pid=,ppid=,stat=,comm= --sort=pid | grep -E "udev|PID" >&2 || true
-    systemctl --no-pager --plain status systemd-udev-trigger.service systemd-udevd.service 2>&1 | tail -n 45 >&2 || true
+    timeout 10s systemctl --no-pager --plain status systemd-udev-trigger.service systemd-udevd.service 2>&1 | tail -n 45 >&2 || true
     exit 1
   fi
 fi
