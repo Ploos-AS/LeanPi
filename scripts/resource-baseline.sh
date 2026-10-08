@@ -42,6 +42,11 @@ if command -v udevadm >/dev/null 2>&1; then
   udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
   echo "LEANPI_UDEV_SETTLE_SECONDS=$udev_settle_elapsed_seconds"
 fi
+# Capture udev state on successful settle too. A completed queue does not
+# guarantee that workers from an earlier daemon instance have exited.
+echo "LEANPI_UDEV_POST_SETTLE_PROCESSES=1"
+ps -e -o pid=,ppid=,stat=,comm= --sort=pid | grep -E 'systemd-udevd|udev-worker' || true
+echo "LEANPI_UDEV_POST_SETTLE_END=1"
 # Let remaining boot-time one-shot work and kernel deferred probes settle. This
 # does not change the budget; it avoids counting transient boot allocations as
 # resident LeanPi memory.
