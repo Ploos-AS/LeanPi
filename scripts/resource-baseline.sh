@@ -11,9 +11,14 @@ mem_kib=
 # Wait for device coldplug to reach a steady state before sampling idle RAM.
 # Slow board emulation can otherwise catch transient udev workers and page-table
 # pressure. Keep this bounded so broken hardware discovery cannot hang CI.
+udev_settle_timeout_seconds=${LEANPI_UDEV_SETTLE_TIMEOUT_SECONDS:-180}
+[[ "$udev_settle_timeout_seconds" =~ ^[1-9][0-9]*$ ]] || { echo "Invalid udev settle timeout" >&2; exit 1; }
+udev_settle_elapsed_seconds=0
 if command -v udevadm >/dev/null 2>&1; then
-  if ! timeout 60s udevadm settle; then
-    echo "ERROR: udev did not settle within 60s; idle resource qualification is invalid" >&2
+  udev_settle_start=$SECONDS
+  if ! timeout "${udev_settle_timeout_seconds}s" udevadm settle; then
+    udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
+    echo "ERROR: udev did not settle within ${udev_settle_timeout_seconds}s (elapsed ${udev_settle_elapsed_seconds}s); idle resource qualification is invalid" >&2
     echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
     echo "Udev queue status:" >&2
     udevadm settle --timeout=1 2>&1 >&2 || true
@@ -25,6 +30,8 @@ if command -v udevadm >/dev/null 2>&1; then
     timeout 10s systemctl --no-pager --plain status systemd-udev-trigger.service systemd-udevd.service 2>&1 | tail -n 45 >&2 || true
     exit 1
   fi
+  udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
+  echo "LEANPI_UDEV_SETTLE_SECONDS=$udev_settle_elapsed_seconds"
 fi
 # Let remaining boot-time one-shot work and kernel deferred probes settle. This
 # does not change the budget; it avoids counting transient boot allocations as
@@ -103,6 +110,7 @@ echo "LEANPI_MEMORY_DIAGNOSTICS_END=1"
 
 {
   echo "LEANPI_RESOURCE_BASELINE=1"
+  echo "udev_settle_seconds=$udev_settle_elapsed_seconds"
   echo "memory_used_kib=$mem_kib"
   echo "process_count=$processes"
   echo "enabled_units=$enabled_units"
