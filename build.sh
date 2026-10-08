@@ -63,6 +63,14 @@ blacklist sun4i_tcon
 blacklist sun4i_drm
 blacklist sunxi_ir
 EOF
+  # QEMU headless qualification has no external USB peripherals. Keep the
+  # physical board image untouched; suppress H3 USB host probing only for this
+  # emulated profile to isolate slow USB coldplug from baseline measurement.
+  cat >> "$rootfs_dir/etc/modprobe.d/leanpi-qemu-headless.conf" <<'EOF'
+blacklist ehci_platform
+blacklist ohci_platform
+blacklist musb_hdrc
+EOF
 fi
 
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
