@@ -27,6 +27,15 @@ if command -v udevadm >/dev/null 2>&1; then
     echo "Udev database tail:" >&2
     timeout 10s udevadm info --export-db 2>/dev/null | tail -n 30 >&2 || true
     ps -e -o pid=,ppid=,stat=,comm= --sort=pid | grep -E "udev|PID" >&2 || true
+    echo "Udev process identity and cgroups:" >&2
+    for pid in $(ps -e -o pid=,comm= | awk '$2 == "systemd-udevd" {print $1}'); do
+      echo "udevd_pid=$pid" >&2
+      tr '\\0' ' ' < "/proc/$pid/cmdline" >&2 || true
+      echo >&2
+      cat "/proc/$pid/cgroup" >&2 || true
+    done
+    echo "Udev daemon unit properties:" >&2
+    timeout 10s systemctl show systemd-udevd.service -p MainPID -p ActiveState -p SubState -p NRestarts -p ExecMainStartTimestamp 2>&1 >&2 || true
     timeout 10s systemctl --no-pager --plain status systemd-udev-trigger.service systemd-udevd.service 2>&1 | tail -n 45 >&2 || true
     exit 1
   fi
