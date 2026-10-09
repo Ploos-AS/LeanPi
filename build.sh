@@ -70,6 +70,13 @@ EOF
 blacklist ehci_platform
 blacklist ohci_platform
 blacklist musb_hdrc
+blacklist musb_sunxi
+# Blacklisting affects alias autoload only. Explicit dependency loads can
+# still pull these modules in, so block installation in QEMU-only images.
+install ehci_platform /bin/false
+install ohci_platform /bin/false
+install musb_hdrc /bin/false
+install musb_sunxi /bin/false
 EOF
 fi
 
