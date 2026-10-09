@@ -27,6 +27,16 @@ if command -v udevadm >/dev/null 2>&1; then
     echo "Udev database tail:" >&2
     timeout 10s udevadm info --export-db 2>/dev/null | tail -n 30 >&2 || true
     ps -e -o pid=,ppid=,stat=,comm= --sort=pid | grep -E "udev|PID" >&2 || true
+    echo "Udev runtime queue files and properties:" >&2
+    for f in /run/udev/queue /run/udev/control; do
+      if [[ -e "$f" ]]; then
+        stat -c '%n type=%F size=%s' "$f" >&2 || true
+      fi
+    done
+    echo "Udev daemon environment and worker limits:" >&2
+    for pid in $(ps -e -o pid=,comm= | awk '$2 == "systemd-udevd" {print $1}'); do
+      grep -E '^(Name|State|Threads):' "/proc/$pid/status" >&2 || true
+    done
     echo "Udev worker device assignments:" >&2
     for pid in $(ps -e -o pid=,comm= | awk '$2 == "(udev-worker)" || $2 == "udev-worker" {print $1}'); do
       echo "worker_pid=$pid" >&2
