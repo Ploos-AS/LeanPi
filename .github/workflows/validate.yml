@@ -71,6 +71,20 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mmdebstrap fdisk rsync qemu-system-arm qemu-user-static binfmt-support debian-archive-keyring
       - name: Build bootable LeanPi image
         run: sudo env IMAGE_SIZE_MB=1024 bash ./build.sh orangepi-pc
+      - name: Inspect H3 USB driver kernel configuration
+        run: |
+          rootfs=out/orangepi-pc/rootfs
+          echo "Kernel config candidates:"
+          find "$rootfs/boot" -maxdepth 1 -name 'config-*' -print
+          for config in "$rootfs"/boot/config-*; do
+            [[ -f "$config" ]] || continue
+            echo "Kernel config: $config"
+            grep -E '^CONFIG_(USB_EHCI_HCD|USB_EHCI_HCD_PLATFORM|USB_OHCI_HCD|USB_OHCI_HCD_PLATFORM|USB_MUSB_HDRC|USB_MUSB_SUNXI|USB_PHY|PHY_SUN4I_USB)=' "$config" || true
+          done
+          echo "QEMU-only module blacklist:"
+          cat "$rootfs/etc/modprobe.d/leanpi-qemu-headless.conf"
+          echo "H3 USB module metadata:"
+          find "$rootfs/lib/modules" -type f \( -iname '*ehci*' -o -iname '*ohci*' -o -iname '*musb*' \) | head -n 30
       - name: Verify QEMU Orange Pi machine exists
         run: qemu-system-arm -machine help | grep -F orangepi-pc
       - name: Inspect built image
