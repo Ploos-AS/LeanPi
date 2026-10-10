@@ -25,6 +25,8 @@ if command -v udevadm >/dev/null 2>&1; then
     udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
     echo "ERROR: udev did not settle within ${udev_settle_timeout_seconds}s (elapsed ${udev_settle_elapsed_seconds}s); idle resource qualification is invalid" >&2
     echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
+    echo "Udev trigger and daemon journal (recent):" >&2
+    timeout 12s journalctl -b --no-pager -o short-monotonic -u systemd-udevd.service -u systemd-udev-trigger.service -n 70 2>&1 >&2 || true
     echo "Udev queue status:" >&2
     udevadm settle --timeout=1 2>&1 >&2 || true
     echo "Pending udev event files:" >&2
