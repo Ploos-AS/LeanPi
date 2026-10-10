@@ -16,7 +16,12 @@ udev_settle_timeout_seconds=${LEANPI_UDEV_SETTLE_TIMEOUT_SECONDS:-180}
 udev_settle_elapsed_seconds=0
 if command -v udevadm >/dev/null 2>&1; then
   udev_settle_start=$SECONDS
-  if ! timeout "${udev_settle_timeout_seconds}s" udevadm settle; then
+  # Keep udevadm's own deadline explicit; the outer timeout is a safety
+  # guard for an unresponsive daemon rather than the primary deadline.
+  udev_settle_exit=0
+  timeout "$((udev_settle_timeout_seconds + 15))s" udevadm settle --timeout="$udev_settle_timeout_seconds" || udev_settle_exit=$?
+  if (( udev_settle_exit != 0 )); then
+    echo "LEANPI_UDEV_SETTLE_EXIT_CODE=$udev_settle_exit" >&2
     udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
     echo "ERROR: udev did not settle within ${udev_settle_timeout_seconds}s (elapsed ${udev_settle_elapsed_seconds}s); idle resource qualification is invalid" >&2
     echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
