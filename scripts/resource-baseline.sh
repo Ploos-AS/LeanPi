@@ -21,6 +21,22 @@ if command -v udevadm >/dev/null 2>&1; then
   udev_settle_exit=0
   timeout "$((udev_settle_timeout_seconds + 15))s" udevadm settle --timeout="$udev_settle_timeout_seconds" || udev_settle_exit=$?
   if (( udev_settle_exit != 0 )); then
+    echo "LEANPI_UDEV_INITIAL_SETTLE_EXIT_CODE=$udev_settle_exit" >&2
+    # Slow H3 emulation can finish coldplug after the first control request
+    # times out. Require a fresh, successful daemon acknowledgement; never
+    # treat an empty queue or idle workers alone as proof of completion.
+    echo "LEANPI_UDEV_SETTLE_RETRY=1" >&2
+    udev_settle_retry_exit=0
+    timeout 75s udevadm settle --timeout=60 || udev_settle_retry_exit=$?
+    if (( udev_settle_retry_exit == 0 )); then
+      echo "LEANPI_UDEV_SETTLE_RETRY_SUCCESS=1"
+      udev_settle_exit=0
+    else
+      echo "LEANPI_UDEV_SETTLE_RETRY_EXIT_CODE=$udev_settle_retry_exit" >&2
+      udev_settle_exit=$udev_settle_retry_exit
+    fi
+  fi
+  if (( udev_settle_exit != 0 )); then
     echo "LEANPI_UDEV_SETTLE_EXIT_CODE=$udev_settle_exit" >&2
     udev_settle_elapsed_seconds=$((SECONDS - udev_settle_start))
     echo "ERROR: udev did not settle within ${udev_settle_timeout_seconds}s (elapsed ${udev_settle_elapsed_seconds}s); idle resource qualification is invalid" >&2
