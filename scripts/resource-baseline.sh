@@ -62,6 +62,14 @@ if command -v udevadm >/dev/null 2>&1; then
         stat -c '%n type=%F size=%s' "$f" >&2 || true
       fi
     done
+    echo "Udev control socket and kernel unix socket state:" >&2
+    ls -l /run/udev/control >&2 || true
+    grep -F '/run/udev/control' /proc/net/unix >&2 || true
+    echo "Udev daemon file descriptor targets:" >&2
+    for pid in $(ps -e -o pid=,comm= | awk '$2 == "systemd-udevd" {print $1}'); do
+      echo "udevd_pid=$pid" >&2
+      timeout 8s ls -l "/proc/$pid/fd" 2>&1 | head -n 35 >&2 || true
+    done
     echo "Udev daemon environment and worker limits:" >&2
     for pid in $(ps -e -o pid=,comm= | awk '$2 == "systemd-udevd" {print $1}'); do
       grep -E '^(Name|State|Threads):' "/proc/$pid/status" >&2 || true
