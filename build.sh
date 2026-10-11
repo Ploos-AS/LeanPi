@@ -83,7 +83,8 @@ EOF
   mkdir -p "$rootfs_dir/etc/systemd/system/systemd-udevd.service.d"
   cat > "$rootfs_dir/etc/systemd/system/systemd-udevd.service.d/leanpi-qemu.conf" <<'EOF'
 [Service]
-Environment=UDEV_WORKERS_MAX=2
+ExecStart=
+ExecStart=/usr/lib/systemd/systemd-udevd --children-max=2
 EOF
 fi
 
