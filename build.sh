@@ -78,6 +78,12 @@ install ohci_platform /bin/false
 install musb_hdrc /bin/false
 install musb_sunxi /bin/false
 EOF
+  # H3 TCG coldplug is CPU-bound; limit worker fan-out only in the emulated
+  # qualification image. Physical board profiles retain systemd defaults.
+  mkdir -p "$rootfs_dir/etc/udev"
+  cat > "$rootfs_dir/etc/udev/udev.conf" <<'EOF'
+children_max=2
+EOF
 fi
 
 echo "Creating ${image_size_mb} MiB raw image: $image_path"; rm -f "$image_path"; truncate -s "${image_size_mb}M" "$image_path"; printf 'label: dos\nunit: sectors\n\nstart=8192, type=83, bootable\n' | sfdisk "$image_path" >/dev/null
