@@ -78,11 +78,12 @@ install ohci_platform /bin/false
 install musb_hdrc /bin/false
 install musb_sunxi /bin/false
 EOF
-  # H3 TCG coldplug is CPU-bound; limit worker fan-out only in the emulated
-  # qualification image. Physical board profiles retain systemd defaults.
-  mkdir -p "$rootfs_dir/etc/udev"
-  cat > "$rootfs_dir/etc/udev/udev.conf" <<'EOF'
-children_max=2
+  # Limit worker fan-out only in the emulated H3 qualification image.
+  # Use a systemd service drop-in rather than replacing dpkg-owned udev.conf.
+  mkdir -p "$rootfs_dir/etc/systemd/system/systemd-udevd.service.d"
+  cat > "$rootfs_dir/etc/systemd/system/systemd-udevd.service.d/leanpi-qemu.conf" <<'EOF'
+[Service]
+Environment=UDEV_WORKERS_MAX=2
 EOF
 fi
 
