@@ -15,6 +15,12 @@ udev_settle_timeout_seconds=${LEANPI_UDEV_SETTLE_TIMEOUT_SECONDS:-180}
 [[ "$udev_settle_timeout_seconds" =~ ^[1-9][0-9]*$ ]] || { echo "Invalid udev settle timeout" >&2; exit 1; }
 udev_settle_elapsed_seconds=0
 if command -v udevadm >/dev/null 2>&1; then
+  # Probe the daemon control channel separately from the coldplug queue.
+  # A failed ping is diagnostic only; the settle gate remains mandatory.
+  echo "LEANPI_UDEV_CONTROL_PREFLIGHT=1"
+  udev_control_ping_exit=0
+  timeout 15s udevadm control --ping || udev_control_ping_exit=$?
+  echo "LEANPI_UDEV_CONTROL_PREFLIGHT_EXIT_CODE=$udev_control_ping_exit"
   udev_settle_start=$SECONDS
   # Keep udevadm's own deadline explicit; the outer timeout is a safety
   # guard for an unresponsive daemon rather than the primary deadline.
