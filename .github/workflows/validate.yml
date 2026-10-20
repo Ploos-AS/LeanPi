@@ -79,7 +79,7 @@ jobs:
           for config in "$rootfs"/boot/config-*; do
             [[ -f "$config" ]] || continue
             echo "Kernel config: $config"
-            grep -E '^CONFIG_(USB_EHCI_HCD|USB_EHCI_HCD_PLATFORM|USB_OHCI_HCD|USB_OHCI_HCD_PLATFORM|USB_MUSB_HDRC|USB_MUSB_SUNXI|USB_PHY|PHY_SUN4I_USB)=' "$config" || true
+            grep -E '^CONFIG_(USB_EHCI_HCD|USB_EHCI_HCD_PLATFORM|USB_OHCI_HCD|USB_OHCI_HCD_PLATFORM|USB_MUSB_HDRC|USB_MUSB_SUNXI|USB_PHY|PHY_SUN4I_USB|IR_SUNXI|IR_SUNXI_RX|RC_DEVICES)=' "$config" || true
           done
           echo "QEMU-only module blacklist:"
           cat "$rootfs/etc/modprobe.d/leanpi-qemu-headless.conf"
