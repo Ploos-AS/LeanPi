@@ -83,6 +83,9 @@ jobs:
           done
           echo "QEMU-only module blacklist:"
           cat "$rootfs/etc/modprobe.d/leanpi-qemu-headless.conf"
+          echo "IR module name and aliases:"
+          find "$rootfs/lib/modules" -type f \( -iname '*sunxi*ir*' -o -iname '*sunxi*cir*' \) -print || true
+          grep -hE '(^|[ /])(sunxi[_-](ir|cir)|sunxi_cir)([ .:]|$)' "$rootfs"/lib/modules/*/modules.alias "$rootfs"/lib/modules/*/modules.dep 2>/dev/null | head -n 35 || true
           echo "H3 USB module metadata:"
           find "$rootfs/lib/modules" -type f \( -iname '*ehci*' -o -iname '*ohci*' -o -iname '*musb*' \) | head -n 30
       - name: Verify QEMU Orange Pi machine exists
