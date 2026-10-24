@@ -61,9 +61,9 @@ blacklist sun8i_drm_hdmi
 blacklist sun8i_mixer
 blacklist sun4i_tcon
 blacklist sun4i_drm
-blacklist sunxi_ir
-# H3 emulated headless qualification: avoid late IR coldplug events.
-install sunxi_ir /bin/false
+# H3 emulated headless qualification: sunxi-ir is provided by sunxi_cir.
+blacklist sunxi_cir
+install sunxi_cir /bin/false
 EOF
   # QEMU headless qualification has no external USB peripherals. Keep the
   # physical board image untouched; suppress H3 USB host probing only for this
