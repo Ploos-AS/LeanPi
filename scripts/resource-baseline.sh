@@ -65,7 +65,10 @@ if command -v udevadm >/dev/null 2>&1; then
     # Ask the daemon for its active queue status, without changing the gate.
     timeout 8s udevadm info --wait-for-initialization=/sys/class/net/lo --timeout=3 2>&1 >&2 || true
     echo "Recent kernel device initialization messages:" >&2
-    timeout 8s dmesg 2>/dev/null | tail -n 45 >&2 || true
+    # Avoid a slow tail pipeline on emulated ARM: capture a bounded snapshot.
+    timeout 8s sh -c 'dmesg --notime 2>/dev/null | grep -E "dwmac|stmmac|eth0|end0|udev|deferred probe|timed out|error" | tail -n 30' >&2 || true
+    echo "Ethernet device and driver binding:" >&2
+    timeout 8s sh -c 'for p in /sys/bus/platform/devices/*ethernet*; do [ -e "$p" ] || continue; echo "$p"; readlink "$p/driver" || true; cat "$p/uevent" 2>/dev/null || true; done' >&2 || true
     echo "Udev queue status:" >&2
     udevadm settle --timeout=1 2>&1 >&2 || true
     echo "Pending udev event files:" >&2
