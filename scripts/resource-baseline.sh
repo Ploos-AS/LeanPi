@@ -49,6 +49,17 @@ if command -v udevadm >/dev/null 2>&1; then
     echo "LEANPI_UDEV_TIMEOUT_DIAGNOSTICS=1" >&2
     echo "Udev trigger and daemon journal (recent):" >&2
     timeout 12s journalctl -b --no-pager -o short-monotonic -u systemd-udevd.service -u systemd-udev-trigger.service -n 70 2>&1 >&2 || true
+    echo "Pending udev queue entries (sysfs devpaths):" >&2
+    # udev's /run/udev/queue is a marker, not a list of pending devices.
+    # Enumerate kernel uevent state and worker process details instead.
+    timeout 8s sh -c 'for f in /sys/kernel/uevent_seqnum /sys/kernel/uevent_helper; do if [ -r "$f" ]; then printf "%s: " "$f"; cat "$f"; fi; done' >&2 || true
+    echo "Udev worker status and current syscalls:" >&2
+    for pid in $(ps -e -o pid=,comm= | awk '$2 == "(udev-worker)" || $2 == "udev-worker" {print $1}'); do
+      echo "worker_pid=$pid" >&2
+      timeout 3s cat "/proc/$pid/status" 2>/dev/null | grep -E '^(Name|State|PPid|Threads):' >&2 || true
+      timeout 3s cat "/proc/$pid/wchan" >&2 || true
+      echo >&2
+    done
     echo "Udev queue status:" >&2
     udevadm settle --timeout=1 2>&1 >&2 || true
     echo "Pending udev event files:" >&2
