@@ -60,6 +60,12 @@ if command -v udevadm >/dev/null 2>&1; then
       timeout 3s cat "/proc/$pid/wchan" >&2 || true
       echo >&2
     done
+    echo "Udev daemon debug status (bounded):" >&2
+    # A worker waiting in epoll is not proof that coldplug is complete.
+    # Ask the daemon for its active queue status, without changing the gate.
+    timeout 8s udevadm info --wait-for-initialization=/sys/class/net/lo --timeout=3 2>&1 >&2 || true
+    echo "Recent kernel device initialization messages:" >&2
+    timeout 8s dmesg 2>/dev/null | tail -n 45 >&2 || true
     echo "Udev queue status:" >&2
     udevadm settle --timeout=1 2>&1 >&2 || true
     echo "Pending udev event files:" >&2
