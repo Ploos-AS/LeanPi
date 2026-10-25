@@ -80,16 +80,6 @@ install ohci_platform /bin/false
 install musb_hdrc /bin/false
 install musb_sunxi /bin/false
 EOF
-  # Diagnostic A/B: keep the H3 Ethernet driver and networking intact, but
-  # disable only systemd's predictable-interface rename for the QEMU image.
-  # If coldplug now settles, investigate the naming rules rather than the MAC.
-  mkdir -p "$rootfs_dir/etc/systemd/network"
-  cat > "$rootfs_dir/etc/systemd/network/10-leanpi-qemu-eth.link" <<'EOF'
-[Match]
-OriginalName=eth*
-[Link]
-NamePolicy=keep kernel
-EOF
   # Limit worker fan-out only in the emulated H3 qualification image.
   # Use a systemd service drop-in rather than replacing dpkg-owned udev.conf.
   mkdir -p "$rootfs_dir/etc/systemd/system/systemd-udevd.service.d"
