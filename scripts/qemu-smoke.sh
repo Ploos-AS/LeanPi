@@ -68,7 +68,7 @@ qemu_args=(-M "$QEMU_MACHINE" -nographic -no-reboot)
 # Make H3's multi-core TCG execution explicit during CI qualification.
 # This changes emulator scheduling only; it does not alter the board image.
 if [[ "$QEMU_MACHINE" == orangepi-pc ]]; then
-  qemu_args+=(-accel tcg,thread=multi -smp 4)
+  qemu_args+=(-accel tcg,thread=multi)
 fi
 case "$QEMU_MACHINE" in
   orangepi-pc|raspi2b|raspi3b) qemu_args+=(-m 1G) ;;
