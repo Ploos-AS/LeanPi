@@ -65,7 +65,7 @@ if command -v udevadm >/dev/null 2>&1; then
     echo "Udev daemon debug status (bounded):" >&2
     # A worker waiting in epoll is not proof that coldplug is complete.
     # Ask the daemon for its active queue status, without changing the gate.
-    timeout 8s udevadm info --wait-for-initialization=/sys/class/net/lo --timeout=3 2>&1 >&2 || true
+    timeout 8s udevadm info --wait-for-initialization=/sys/class/net/lo --timeout=3s 2>&1 >&2 || true
     echo "Recent kernel device initialization messages:" >&2
     # Avoid a slow tail pipeline on emulated ARM: capture a bounded snapshot.
     timeout 8s sh -c 'dmesg --notime 2>/dev/null | grep -E "dwmac|stmmac|eth0|end0|udev|deferred probe|timed out|error" | tail -n 30' >&2 || true
